@@ -4,14 +4,13 @@ Created on 12 April 2011
 '''
 
 import MySQLdb
-import logging
+import ConfigParser
 import hashlib
+import logging
 import base64
 import random
 import time
-import ConfigParser
-from time import * #@UnusedWildImport
-import sys
+
 log = logging.getLogger( "console_log" )
 
 
@@ -54,13 +53,46 @@ class HomeDB( object ):
     SECTION_NAME = "HomeuserDB"
 
 
-    #///////////////////////////////////////
+     #///////////////////////////////////////
 
- 
-    createQueries = [
-           
+  
+    createQueries = [ 
+               
+        ( TBL_DATAWARE_PROCESSORS, """
+            CREATE TABLE %s.%s (
+                access_token varchar(256) NOT NULL,
+                client_id varchar(256) NOT NULL,
+                user_id varchar(256) NOT NULL,
+                expiry_time int(11) unsigned NOT NULL,
+                query text NOT NULL,
+                checksum varchar(256) NOT NULL,
+                PRIMARY KEY (access_token),
+                UNIQUE KEY (client_id,user_id,checksum)
+            ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+        """  % ( DB_NAME, TBL_DATAWARE_PROCESSORS ) ),
+       
+        ( TBL_DATAWARE_CATALOGS, """ 
+            CREATE TABLE %s.%s (
+                catalog_uri varchar(256) NOT NULL,                
+                resource_id varchar(256) NOT NULL,
+                registered int(10) unsigned DEFAULT NULL,
+                PRIMARY KEY (catalog_uri)
+            ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+        """  % ( DB_NAME, TBL_DATAWARE_CATALOGS ) ),  
+        
+        ( TBL_DATAWARE_INSTALLS, """ 
+            CREATE TABLE %s.%s (
+                user_id varchar(256) NOT NULL,
+                catalog_uri varchar(256) NOT NULL,                
+                install_token varchar(256),
+                state varchar(256) NOT NULL,
+                registered int(10) unsigned DEFAULT NULL,
+                PRIMARY KEY (user_id),
+                FOREIGN KEY (catalog_uri) REFERENCES %s(catalog_uri) 
+                ON DELETE CASCADE ON UPDATE CASCADE
+            ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+        """  % ( DB_NAME, TBL_DATAWARE_INSTALLS, TBL_DATAWARE_CATALOGS ) ),            
     ] 
-    
     
     #///////////////////////////////////////
     
@@ -250,6 +282,7 @@ class HomeDB( object ):
               """  % ( self.DB_NAME, self.TBL_DATAWARE_CATALOGS, '%s', '%s', '%s', )
             
             state = self.generateAccessToken()
+            log.info("query is %s %s %s %s" % (query, catalog_uri, resource_id, time.time()));
             self.cursor.execute( query, ( catalog_uri, resource_id, time.time(), ) )
                 
             return state;
