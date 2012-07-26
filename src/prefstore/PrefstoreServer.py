@@ -154,11 +154,10 @@ def install_complete():
         return "installation success"
 
         
-@route( "/static/:filename" )^M
-def user_get_static_file( filename ):^M
-    ^M
+@route( "/static/:filename" )
+def user_get_static_file( filename ):
     return static_file( filename, root='static/' )
-    
+
 #//////////////////////////////////////////////////////////
 # 3RD PARTY PROCESSOR SPECIFIC WEB-API CALLS
 #//////////////////////////////////////////////////////////
