@@ -9,7 +9,7 @@ import hashlib
 import logging
 import base64
 import random
-import time
+from time import * 
 log = logging.getLogger( "console_log" )
 
 
@@ -41,10 +41,11 @@ def safety_mysql( fn ) :
 class DataDB( object ):
     ''' classdocs '''
     
-    DB_NAME = 'prefstore'
+    DB_NAME = 'dataware'
     TBL_DATAWARE_PROCESSORS = 'tblDatawareProcessors'
     TBL_DATAWARE_CATALOGS = 'tblDatawareCatalogs'
     TBL_DATAWARE_INSTALLS = 'tblDatawareInstalls'
+    TBL_USER_DETAILS = 'tblUserDetails'
     CONFIG_FILE = "prefstore.cfg"
     SECTION_NAME = "DatawareDB"
     
@@ -61,11 +62,22 @@ class DataDB( object ):
                 expiry_time int(11) unsigned NOT NULL,
                 query text NOT NULL,
                 checksum varchar(256) NOT NULL,
-                PRIMARY KEY (access_token) USING BTREE,
+                PRIMARY KEY (access_token),
                 UNIQUE KEY (client_id,user_id,checksum)
             ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
         """  % ( DB_NAME, TBL_DATAWARE_PROCESSORS ) ),
-       
+        
+        ( TBL_USER_DETAILS, """
+            CREATE TABLE %s.%s (
+            user_id varchar(256) NOT NULL,
+            user_name varchar(64),
+            email varchar(256),
+            registered int(10) unsigned,        
+            PRIMARY KEY (user_id), UNIQUE KEY `UNIQUE` (`user_name`)
+            ) 
+            DEFAULT CHARSET=latin1;
+        """  % ( DB_NAME, TBL_USER_DETAILS ) ),  
+        
         ( TBL_DATAWARE_CATALOGS, """ 
             CREATE TABLE %s.%s (
                 catalog_uri varchar(256) NOT NULL,                
@@ -477,8 +489,7 @@ class DataDB( object ):
         
             
     #///////////////////////////////////////////////
-    
-    
+            
     @safety_mysql       
     def authenticate( self, install_token ) :
         
@@ -508,3 +519,121 @@ class DataDB( object ):
         #replace plus signs with asterisks. Plus signs are reserved
         #characters in ajax transmissions, so just cause problems
         return token.replace( '+', '*' ) 
+        
+        
+        
+    @safety_mysql                
+    def fetch_user_by_id( self, user_id ) :
+
+        if user_id :
+            query = """
+                SELECT * FROM %s.%s t where user_id = %s 
+            """  % ( self.DB_NAME, self.TBL_USER_DETAILS, '%s' ) 
+        
+            self.cursor.execute( query, ( user_id, ) )
+            row = self.cursor.fetchone()
+
+            if not row is None:
+                return row
+            else :
+                return None
+        else :
+            return None   
+        
+        
+    @safety_mysql                
+    def fetch_user_by_name( self, user_name ) :
+
+        if user_name :
+            query = """
+                SELECT * FROM %s.%s t where user_name = %s 
+            """  % ( self.DB_NAME, self.TBL_USER_DETAILS, '%s' ) 
+        
+            self.cursor.execute( query, ( user_name, ) )
+            row = self.cursor.fetchone()
+
+            if not row is None:
+                return row
+            else :
+                return None
+        else :
+            return None     
+            
+    @safety_mysql                
+    def fetch_user_by_email( self, email ) :
+
+        if email :
+            query = """
+                SELECT * FROM %s.%s t where email = %s 
+            """  % ( self.DB_NAME, self.TBL_USER_DETAILS, '%s' ) 
+        
+            self.cursor.execute( query, ( email, ) )
+            row = self.cursor.fetchone()
+            if not row is None:
+                return row
+            else :
+                return None    
+        else :
+            return None     
+        
+        
+    #///////////////////////////////////////
+    
+    @safety_mysql                
+    def insert_user( self, user_id ):
+        
+        if user_id:
+            
+            log.info( 
+                "%s %s: Adding user '%s' into database" 
+                % ( self.name, "insert_user", user_id ) 
+            );
+            
+            query = """
+                INSERT INTO %s.%s 
+                ( user_id, user_name, email, registered ) 
+                VALUES ( %s, null, null, null )
+            """  % ( self.DB_NAME, self.TBL_USER_DETAILS, '%s' ) 
+
+            self.cursor.execute( query, ( user_id ) )
+            return True;
+        
+        else:
+            log.warning( 
+                "%s %s: Was asked to add 'null' user to database" 
+                % (  self.name, "insert_user", ) 
+            );
+            return False;
+        
+        
+    #///////////////////////////////////////
+    
+    
+    @safety_mysql                    
+    def insert_registration( self, user_id, user_name, email ):
+            
+        if ( user_id and user_name and email ):
+            
+            log.info( 
+                "%s %s: Updating user '%s' registration in database" 
+                % ( self.name, "insert_registration", user_id ) 
+            );
+            
+            query = """
+                UPDATE %s.%s 
+                SET user_name = %s, email = %s, registered= %s 
+                WHERE user_id = %s
+            """  % ( self.DB_NAME, self.TBL_USER_DETAILS, '%s', '%s', '%s', '%s' ) 
+            log.info("query is %s %s %s %s %s" % (query, user_name, email, time(), user_id))
+            self.cursor.execute( query, ( user_name, email, time(), user_id ) )
+            return True;
+        
+        else:
+            log.warning( 
+                "%s %s: Registration requested with incomplete details" 
+                % (  self.name, "insert_registration", ) 
+            );
+            return False;    
+
+            
+    #///////////////////////////////////////

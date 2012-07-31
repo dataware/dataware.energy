@@ -37,8 +37,9 @@ class ProcessingModule( object ) :
     #///////////////////////////////////////////////
     
     
-    def __init__( self, datadb ):
+    def __init__( self, datadb, homedb ):
         self.db = datadb;       
+        self.homedb = homedb;
         self.sandbox_builtins = __builtin__.__dict__.copy()
         
         for command in __builtin__.__dict__ :
