@@ -174,9 +174,8 @@ class ProcessingModule( object ) :
         sandbox = module( "sandbox" )
         #sandbox.__dict__[ '__builtins__' ] = self.sandbox_builtins
         sandbox.db = self.db
-        
+        sandbox.homedb = self.homedb
         #setup constants available to the query
-        sandbox.TOTAL_WEB_DOCUMENTS = 2500000000
         sandbox.user = user
 
         #load the query function into memory

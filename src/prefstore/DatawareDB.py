@@ -10,6 +10,7 @@ import logging
 import base64
 import random
 from time import * 
+
 log = logging.getLogger( "console_log" )
 
 
@@ -310,7 +311,7 @@ class DataDB( object ):
               """  % ( self.DB_NAME, self.TBL_DATAWARE_CATALOGS, '%s', '%s', '%s', )
             
             state = self.generateAccessToken()
-            self.cursor.execute( query, ( catalog_uri, resource_id, time.time(), ) )
+            self.cursor.execute( query, ( catalog_uri, resource_id, time(), ) )
                 
             return state;
         
@@ -367,7 +368,7 @@ class DataDB( object ):
             
             state = self.generateAccessToken()
             self.cursor.execute( query, 
-                ( user_id, catalog_uri, state, time.time(), ) )
+                ( user_id, catalog_uri, state, time(), ) )
                 
             return state;
         
@@ -393,7 +394,7 @@ class DataDB( object ):
               """  % ( self.DB_NAME, self.TBL_DATAWARE_INSTALLS, '%s', '%s', '%s', '%s' )
            
             update = self.cursor.execute( query, 
-                ( install_token, time.time(), user_id, catalog_uri, ) )
+                ( install_token, time(), user_id, catalog_uri, ) )
 
             if update > 0 :
                 log.debug( 

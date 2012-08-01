@@ -188,7 +188,7 @@ class HomeDB( object ):
         """  % ( self.DB_NAME, self.TBL_TERM_URLS) 
     
         self.cursor.execute( query )
-        row = self.cursor.fetchone()
+        row = self.cursor.fetchall()
 
         if not row is None:
             return row
