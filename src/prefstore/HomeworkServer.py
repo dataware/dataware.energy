@@ -658,10 +658,12 @@ if __name__ == '__main__' :
     BOTTLE_QUIET = True 
     ROOT_PAGE = "/"
     RESOURCE_NAME = "homework"
-    RESOURCE_URI = "http://192.168.1.1"
+    #RESOURCE_URI = "http://192.168.1.1"
+    RESOURCE_URI = "http://128.243.22.219"
     #REALM = "http://www.prefstore.org"
     #LOCAL! 
-    REALM = "http://192.168.1.1:80"
+    #REALM = "http://192.168.1.1:80"
+    REALM = "http://128.243.22.219:80"
     #WEB_PROXY = "http://mainproxy.nottingham.ac.uk:8080"
             
     #-------------------------------
