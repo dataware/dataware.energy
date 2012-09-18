@@ -1,0 +1,3 @@
+[console_scripts]
+postman = postman.__main__:main
+

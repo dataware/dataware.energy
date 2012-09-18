@@ -154,7 +154,18 @@ def install_complete():
         
 @route( "/static/:filename" )
 def user_get_static_file( filename ):
+    
     return static_file( filename, root='static/' )
+
+
+
+@route( "/static/:path#.+#" )
+
+def user_get_static_file( path ):
+   
+    return static_file( path, root='static/' )
+
+
 
 #//////////////////////////////////////////////////////////
 # 3RD PARTY PROCESSOR SPECIFIC WEB-API CALLS
@@ -278,16 +289,16 @@ def authenticate():
         if user_id:
             
             try:
-                log.info( "fetching user by id..." );
+                
                 user = datadb.fetch_user_by_id( user_id )
-                log.info( "done it...%s" %  o.get_user_id()  );
+              
                 #if this is a new user add them
                 if ( not user ):
                     datadb.insert_user( o.get_user_id() )
                     datadb.commit()
                     user_name = None
                 else :
-                    self.datadb = user[ "user_name" ]
+                    user_name = user[ "user_name" ]
                 
                 set_authentication_cookie( user_id, user_name  )
                 
@@ -653,17 +664,14 @@ if __name__ == '__main__' :
     # constants
     #-------------------------------
     EXTENSION_COOKIE = "prefstore_logged_in"
-    PORT = 80
+    PORT = 9000
     HOST = "0.0.0.0"  
     BOTTLE_QUIET = True 
     ROOT_PAGE = "/"
     RESOURCE_NAME = "homework"
-    #RESOURCE_URI = "http://192.168.1.1"
-    RESOURCE_URI = "http://128.243.22.219"
+    RESOURCE_URI = "http://hwresource.block49.net:9000"
     #REALM = "http://www.prefstore.org"
-    #LOCAL! 
-    #REALM = "http://192.168.1.1:80"
-    REALM = "http://128.243.22.219:80"
+    REALM = "http://hwresource.block49.net:9000"
     #WEB_PROXY = "http://mainproxy.nottingham.ac.uk:8080"
             
     #-------------------------------
