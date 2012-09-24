@@ -107,6 +107,8 @@ class ProcessingModule( object ) :
     
     def invoke_processor( self, processor_token, jsonParams ):
         
+	print "invoking processor!!!!!"
+ 
         if processor_token is None :
             return self.format_process_failure(
                 "access_exception",
@@ -153,6 +155,7 @@ class ProcessingModule( object ) :
         #finally invoke the function
         try:
             result = sandbox.run( parameters )
+	    print result
             return self.format_process_success( result )
         
         #and catch any problems that occur in processing

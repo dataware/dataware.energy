@@ -3,9 +3,14 @@
 <title>My dataware resources</title>
 
 <link rel="stylesheet" type="text/css" href="./static/bootstrap/css/bootstrap.min.css" /> 
-<script type="text/javascript" src="./static/jquery-1.6.min.js"></script> 
-<script type="text/javascript" src="./static/jqcloud-0.2.4.js"></script> 
+<link rel="stylesheet" type="text/css" href="./static/jqcloud.css" />
+<script type="text/javascript" src="./static/jquery/jquery-1.8.2.min.js"></script>
+<script type="text/javascript" src="./static/jquery/jquery-ui-1.8.23.min.js"></script>
+<script type="text/javascript" src="./static/bootstrap/js/bootstrap.min.js"></script>
+
+<script type="text/javascript" src="./static/jqcloud/jqcloud-1.0.1.min.js"></script> 
 <script type="text/javascript" src="http://www.google.com/jsapi"></script>
+
 
 <script>
 

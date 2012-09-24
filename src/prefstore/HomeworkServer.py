@@ -585,7 +585,18 @@ def home( ):
         
         summary = None #datadb.fetch_user_summary( user[ "user_id" ] )
 
-    return template( 'home_page_template', user=user, summary=summary );
+    browsing = homedb.fetch_url_count()
+    urls=[]
+    
+    multiplier = 50 / float(browsing[0]['requests']);
+     
+    for row in browsing:
+        link = "javascript:wordclicked('%s')" % row['url'];
+        urls.append({'text': row['url'], 'weight':int(float(row['requests']) * multiplier), 'link': link, 'html': {'title': "url browsed"}})
+    
+    print urls
+    
+    return template( 'home_page_template', user=user, summary=summary, urls=urls);
     
     
 #///////////////////////////////////////////////  

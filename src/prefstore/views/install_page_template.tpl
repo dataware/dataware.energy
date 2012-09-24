@@ -61,20 +61,26 @@
 	CONTENT SECTION
 ------------------------------------------------------------------>
 <div class="container">
-    <div class="alert alert-info">
-	    OK, so here's the deal..
-	</div>
-</div>
+    <div class="row">
+        <div class="span12">
+            <div class="alert alert-info">
+                When you sign up your resource to a catalog, you will be able to share your data with others.  The catalog will provide you with facilities to manage which third parties can access which elements of your data.
+            </div>
+        </div>
+    </div>
 
-<div class="span4 offset4 well">
-    <legend> Choose a catalog </legend>
-    <form action="javascript:install_resource()">
-        <input type="hidden" name="submission" value="True" />
-        <select name="catalog_uri" class="span4" id="catalog_uri">
-            <option>http://datawarecatalog.appspot.com</option>
-        </select>
-        <button class="btn btn-warning" type="submit">Use!</button>
-    </form>
+    <div class="row">
+        <div class="span4 offset4 well">
+            <legend> Choose a catalog </legend>
+            <form action="javascript:install_resource()">
+                <input type="hidden" name="submission" value="True" />
+                <select name="catalog_uri" class="span4" id="catalog_uri">
+                    <option>http://datawarecatalog.appspot.com</option>
+                </select>
+                <button class="btn btn-warning" type="submit">Use!</button>
+            </form>
+        </div>
+    </div>
 </div>
 
 
