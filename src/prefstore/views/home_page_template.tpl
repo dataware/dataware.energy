@@ -4,8 +4,7 @@
 <!---------------------------------------------------------------- 
 	PAGE SCRIPTS
 ------------------------------------------------------------------>
-<script src="./static/d3/d3.min.js"></script>
-<script src="./static/d3/extras/d3.layout.cloud.js"></script>
+<script type="text/javascript" src="./static/knockout/knockout-2.1.0.js"></script>
 
 <body>
 
@@ -35,15 +34,12 @@
                         <div class="span8">
                             <div id="example" style="width: 550px; height: 350px;"></div>
                         </div>
-                        <div class="span4" id="details">
-                            <div class="well">
-                            Some details here about this url - pulled from server!
-                            <ul>
-                                <li>Owner:</li>
-                                <li>Macaddr</li>
-                                <li>total number of times browsed</li>
-                                <li> A graph of browsing history / popularity? </li>
-                            </ul>
+                        <div data-bind="if:selectedUrl()">
+                            <div class="span4" id="details">
+                                <div class="well">
+                                    <h4> <span data-bind="text:selectedUrl().url"></h4>
+                                    <h4><small><span data-bind="text:requestText()"></small></h4>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -52,36 +48,57 @@
                 <div class="tab-pane" id="energy">b</div>
             </div>
         
-   
-        <a href="install">Share your data</a>
-    
+            %if installs:
+                You are sharing this data with
+                 %for catalog in installs:
+                    <a href="{{catalog}}">{{catalog}}</a>
+                 %end
+            %else:
+                <a href="install">Share your data</a>
+            %end
 	%end
-	
-	
-	
 </div>
 
 
 <script>
     $('#myTab a').click(function (e) {
-    e.preventDefault();
-    $(this).tab('show');
-    })
+        e.preventDefault();
+        $(this).tab('show');
+    });
+</script>
+
+<script>
+        
+    function UrlModel(){
+        var self = this;
+        this.selectedUrl = ko.observable();
+        
+        this.requestText = ko.computed(function(){
+            if (self.selectedUrl())
+                return self.selectedUrl().requests  + " requests";
+            return "";
+        });
+    }
     
-   
+    var urlModel = new UrlModel();
+    ko.applyBindings(urlModel);
 
 </script>
+
 <script type="text/javascript">
-      $('#details').hide();
+
+
+      /*$('#details').hide();*/
      
       function wordclicked(url){
-        $('#details').show().effect('bounce', {times: 4}, 300);
+        urlModel.selectedUrl(url);
+        console.log(url);
+        console.log(url.macaddrs);
+       // $('#details').show().effect('bounce', {times: 4}, 300);
       }
     
       $("#example").jQCloud({{!urls}});
-
 </script>
-
 
 
 <!-- FOOTER ------------------------------------------------------------------>

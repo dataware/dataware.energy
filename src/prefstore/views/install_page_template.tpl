@@ -64,7 +64,7 @@
     <div class="row">
         <div class="span12">
             <div class="alert alert-info">
-                When you sign up your resource to a catalog, you will be able to share your data with others.  The catalog will provide you with facilities to manage which third parties can access which elements of your data.
+                When you sign up your resource to a catalog, you will be able to share your data with others.  The catalog will provide you with facilities to manage which third parties can access which elements of your data.  If you do not have a catalog set up we'd recommend <a href='http://datawarecatalog.appspot.com'>this one </a>
             </div>
         </div>
     </div>

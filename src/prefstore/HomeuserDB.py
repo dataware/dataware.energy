@@ -182,7 +182,6 @@ class HomeDB( object ):
      
     @safety_mysql                
     def fetch_urls( self) :
-        self.fetch_url_count()
         
         query = """
             SELECT * FROM %s.%s 
@@ -202,13 +201,13 @@ class HomeDB( object ):
     def fetch_url_count( self) :
 
         query = """
-            SELECT url, count(url) as requests FROM %s.%s GROUP BY url ORDER BY requests DESC
+            SELECT url, count(url) as requests, group_concat(distinct(macaddr)) as macaddrs, group_concat(distinct(ipaddr)) as ipaddrs FROM %s.%s GROUP BY url ORDER BY requests DESC
         """  % ( self.DB_NAME, self.TBL_TERM_URLS) 
    
 	
         self.cursor.execute( query )
         row = self.cursor.fetchall()
-        print row
+       
         if not row is None:
             return row
         else :

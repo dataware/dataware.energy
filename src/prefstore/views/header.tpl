@@ -7,8 +7,8 @@
 <script type="text/javascript" src="./static/jquery/jquery-1.8.2.min.js"></script>
 <script type="text/javascript" src="./static/jquery/jquery-ui-1.8.23.min.js"></script>
 <script type="text/javascript" src="./static/bootstrap/js/bootstrap.min.js"></script>
-
 <script type="text/javascript" src="./static/jqcloud/jqcloud-1.0.1.min.js"></script> 
+
 <script type="text/javascript" src="http://www.google.com/jsapi"></script>
 
 
@@ -31,8 +31,9 @@
         <a class="brand" href="#">My dataware resources</a>
         <ul class="nav">
             <li><a href="#" class="menu_button" id="home">home</a></li>
-            <li><a href="#" class="menu_button" id="summary">summary</a></li>
-            
+            <li><a href="#" class="menu_button" id="install">share</a></li>
+            <!--<li><a href="#" class="menu_button" id="summary">summary</a></li>
+            <li><a href="#" class="menu_button" id="liveupdate">liveupdate</a></li>-->
             %if user:
             <li><a href="#" class="menu_button" id="logout">logout</a></li>
             %else:

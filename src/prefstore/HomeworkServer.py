@@ -149,7 +149,8 @@ def install_complete():
             return error( e )
         
         #TODO: tell the user that the installation succeeded (a redirect?)
-        return "installation success"
+        redirect( "/" )
+        #return "installation success"
 
         
 @route( "/static/:filename" )
@@ -557,7 +558,17 @@ def check_login():
     else:
         return None   
     
- 
+
+@route( '/liveupdate', method = "GET" )
+def liveupdate( ):
+    try:
+        user = check_login()
+    except RegisterException, e:
+        redirect( "/register" ) 
+    except LoginException, e:
+        return error( e.msg )
+     
+    return template('live_update_template', user=user);
 #///////////////////////////////////////////////  
     
     
@@ -572,39 +583,39 @@ def home( ):
     except LoginException, e:
         return error( e.msg )
   
+    installs = None
+    
     if ( not user ):
         summary = None
-    else:
-        user[ "registered_str" ] = time.strftime( "%d %b %Y %H:%M", time.gmtime( user[ "registered" ] ) )
-        user[ "last_distill_str" ] = time.strftime( "%d %b %Y %H:%M")
-        
-       
-        user[ "average_appearances" ] = 0
-        user[ "total_documents" ] = 0
-        user[ "total_term_appearances" ] = 0   
-        
+    else: 
         summary = None #datadb.fetch_user_summary( user[ "user_id" ] )
-
+        installs = datadb.fetch_catalog_installs(user['user_id'])
+   
+    
     browsing = homedb.fetch_url_count()
     urls=[]
     
     multiplier = 50 / float(browsing[0]['requests']);
      
     for row in browsing:
-        link = "javascript:wordclicked('%s')" % row['url'];
+        
+        link = "javascript:wordclicked({'url': '%s', 'macaddrs':'%s', 'ipdaddrs':'%s' , 'requests' :%d})" % (row['url'],row['macaddrs'],row['ipaddrs'],row['requests'])
+        
         urls.append({'text': row['url'], 'weight':int(float(row['requests']) * multiplier), 'link': link, 'html': {'title': "url browsed"}})
-    
-    print urls
-    
-    return template( 'home_page_template', user=user, summary=summary, urls=urls);
+     
+    return template( 'home_page_template', user=user, summary=summary, urls=urls, installs=installs);
     
     
 #///////////////////////////////////////////////  
     
+@route('/purge')
+def purge():
+    datadb.purgedata()
+    redirect( ROOT_PAGE )
     
 @route('/summary')
 def summary():
-  
+
     try:
         user = check_login()
     except RegisterException, e:

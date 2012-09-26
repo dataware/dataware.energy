@@ -487,7 +487,24 @@ class DataDB( object ):
                 return None
         else :
             return None   
+    
+    #///////////////////////////////////////////////
+    
+    @safety_mysql                    
+    def fetch_catalog_installs(self, user_id):
+        if user_id:   
+            query = """
+                SELECT * FROM %s.%s t WHERE user_id = %s
+            """  % ( self.DB_NAME, self.TBL_DATAWARE_INSTALLS, '%s') 
         
+            self.cursor.execute( query, ( user_id ) )
+            rows = self.cursor.fetchall()
+            if rows:
+                return [dict['catalog_uri'] for dict in rows] 
+            
+        else :
+            return None
+            
             
     #///////////////////////////////////////////////
             
@@ -638,3 +655,14 @@ class DataDB( object ):
 
             
     #///////////////////////////////////////
+    
+    @safety_mysql                    
+    def purgedata( self ):
+        try:
+            self.cursor.execute("DELETE FROM %s.%s" % ( self.DB_NAME, self.TBL_USER_DETAILS))
+            self.cursor.execute("DELETE FROM %s.%s" % ( self.DB_NAME, self.TBL_DATAWARE_PROCESSORS))
+            self.cursor.execute("DELETE FROM %s.%s" % ( self.DB_NAME, self.TBL_DATAWARE_CATALOGS))
+            self.cursor.execute("DELETE FROM %s.%s" % ( self.DB_NAME, self.TBL_DATAWARE_INSTALLS))
+            self.commit()
+        except Exception, e:
+            print e
