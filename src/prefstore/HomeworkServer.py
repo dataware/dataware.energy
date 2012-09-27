@@ -152,7 +152,76 @@ def install_complete():
         redirect( "/" )
         #return "installation success"
 
-        
+#support for a resource owner to test a requested processor
+
+@route( '/test_query', method = ["GET", "POST"])
+def test_query():
+  
+    try:
+        user = check_login()
+        if ( not user ): redirect( ROOT_PAGE )
+    except RegisterException, e:
+        redirect( "/register" )
+    except LoginException, e:
+        return error( e.msg )
+    except Exception, e:
+        return error( e ) 
+    
+    if request.method=="GET":
+        try:
+            jsonParams = request.GET['parameters']
+            query = request.GET['query']
+            data = pm.test_processor(user, query, jsonParams)
+            result = json.loads( 
+                data.replace( '\r\n','\n' ), 
+                strict=False 
+            )
+            
+            log.info(result)
+            
+            if result['success']:
+                log.info("success!!")
+                values = result['return']
+                if isinstance(values, list):
+                    if len(values) > 0:
+                        if isinstance(values[0], dict):
+                            keys = list(values[0].keys())
+                            return template('result_template', user=user, result=values, keys=keys)
+            log.info("returning data!")   
+            return data
+            
+        except Exception, e:
+            raise e
+    
+    if request.method=="POST":
+        try:
+            jsonParams =  request.forms.get('parameters')
+            query = request.forms.get('query')
+            data = pm.test_processor(user, query, jsonParams)
+            
+            result = json.loads( 
+                data.replace( '\r\n','\n' ), 
+                strict=False 
+            )
+            
+            log.info(result)
+            
+            if result['success']:
+                log.info("success!!")
+                values = result['return']
+                if isinstance(values, list):
+                    if len(values) > 0:
+                        if isinstance(values[0], dict):
+                            keys = list(values[0].keys())
+                            return template('result_template', result=values, keys=keys)
+            log.info("returning data!")   
+            return data
+            
+    
+        except Exception, e:
+            raise e   
+            
+            
 @route( "/static/:filename" )
 def user_get_static_file( filename ):
     

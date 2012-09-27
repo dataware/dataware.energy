@@ -100,14 +100,48 @@ class ProcessingModule( object ) :
         
         return json.dumps( json_response );
           
+
+    def test_processor( self, user, query, jsonParams ):
     
-     
+        try:
+            parameters = json.loads( jsonParams ) if jsonParams else {}
+        except:
+            return self.format_process_failure(
+                "access_exception",
+                "incorrectly formatted JSON parameters"
+            ) 
+        try:
+            sandbox = self.setup_sandbox( user, query )
+
+        #TODO: Should probably log exceptions like these                           
+        except Exception, e:
+            return self.format_process_failure(
+                "processing_exception",
+                "Compile-time failure - %s:%s" % 
+                ( type( e ).__name__,  e )
+            ) 
+
+        #finally invoke the function
+        try:
+            result = sandbox.run( parameters )
+            return self.format_process_success( result )
+        
+        #and catch any problems that occur in processing
+        except:
+           
+            return self.format_process_failure(
+                "processing_exception",
+                "Run-time failure - %s " % str( sys.exc_info() )
+            ) 
+
+   
+   
+   
     #///////////////////////////////////////////////
     
     
     def invoke_processor( self, processor_token, jsonParams ):
         
-	print "invoking processor!!!!!"
  
         if processor_token is None :
             return self.format_process_failure(
