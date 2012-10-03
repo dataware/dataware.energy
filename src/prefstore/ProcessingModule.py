@@ -77,12 +77,10 @@ class ProcessingModule( object ) :
     #///////////////////////////////////////////////
     
     
-    # modified tlodge: attach an id to the processing request here so that 
-    # it can be referenced by the user at the client that issued the request
-    def format_process_success( self, id, result = None):
+    def format_process_success( self, result = None):
         
         if ( result ) :
-            json_response = { 'success': True, 'return': result, 'id':id}
+            json_response = { 'success': True, 'return': result}
         else : 
             json_response = { 'success': True }
         
@@ -126,7 +124,7 @@ class ProcessingModule( object ) :
         #finally invoke the function
         try:
             result = sandbox.run( parameters )
-            return self.format_process_success(-1, result )
+            return self.format_process_success( result )
         
         #and catch any problems that occur in processing
         except:
@@ -142,9 +140,12 @@ class ProcessingModule( object ) :
     #///////////////////////////////////////////////
     
     
-    def invoke_processor( self, processor_token, jsonParams ):
+    def invoke_processor( self, processor_token, jsonParams, view_url=None):
         
- 
+        log.info("in here...")
+        
+        log.info("%s" % view_url)
+        
         if processor_token is None :
             return self.format_process_failure(
                 "access_exception",
@@ -193,16 +194,14 @@ class ProcessingModule( object ) :
         #finally invoke the function
         try:
             execution_time = time.time()
-            result = sandbox.run( parameters )
-            m = hashlib.md5()
-            m.update('%f' % time.time())
-            id = m.hexdigest()
+            result = sandbox.run( parameters ) 
+            log.info("inserting execution with url %s" % view_url)
+        
             try:
-                self.db.insert_execution(execution_id=id, processor_id=processor_id,parameters=jsonParams, executed=execution_time)
+                self.db.insert_execution(view_url=view_url, processor_id=processor_id,parameters=jsonParams, executed=execution_time)
             except:
                 log.error("failed to store the execution details executionid: %s processor_id %s parameters: %s" % (id, processor_id, jsonParams))
-            
-            return self.format_process_success(id, result )
+            return self.format_process_success(result )
         
         #and catch any problems that occur in processing
         except:

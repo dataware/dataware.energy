@@ -153,7 +153,21 @@ def install_complete():
         #return "installation success"
 
 #support for a resource owner to test a requested processor
-
+@route( '/view_executions', method = ["GET", "POST"])
+def view_executions():   
+    
+    try:
+        user = check_login()
+        if ( not user ): redirect( ROOT_PAGE )
+    except RegisterException, e:
+        redirect( "/register" )
+    except LoginException, e:
+        return error( e.msg )
+    except Exception, e:
+        return error( e ) 
+    
+    
+    
 @route( '/test_query', method = ["GET", "POST"])
 def test_query():
   
@@ -251,9 +265,12 @@ def invoke_processor():
         
         jsonParams = request.forms.get( 'parameters' )
         
+        view_url = request.forms.get( 'view_url' )
+        
         result = pm.invoke_processor( 
             access_token, 
-            jsonParams )
+            jsonParams,
+            view_url)
         
         return result
     except Exception, e:

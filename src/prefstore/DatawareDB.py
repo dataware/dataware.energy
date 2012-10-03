@@ -104,11 +104,11 @@ class DataDB( object ):
          
         ( TBL_DATAWARE_EXECUTIONS, """ 
             CREATE TABLE %s.%s (
-                execution_id varchar(256) NOT NULL,
+                view_url varchar(256) NOT NULL,
                 processor_id varchar(256) NOT NULL,                
                 parameters varchar(256) NOT NULL,
                 executed int(11) unsigned NOT NULL,
-                PRIMARY KEY (execution_id),
+                PRIMARY KEY (view_url),
                 FOREIGN KEY (processor_id) REFERENCES %s(access_token) 
                 ON DELETE CASCADE ON UPDATE CASCADE
             ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
@@ -245,14 +245,14 @@ class DataDB( object ):
       
     #////////////////////////////////////////////////////////////////////////////////////////////
     @safety_mysql   
-    def insert_execution(self, execution_id, processor_id,parameters, executed):
+    def insert_execution(self, view_url, processor_id, parameters, executed):
         query = """
              INSERT INTO %s.%s VALUES ( %s, %s, %s, %s)
         """  % ( self.DB_NAME, self.TBL_DATAWARE_EXECUTIONS, '%s', '%s', '%s', '%s') 
         
         self.cursor.execute( 
             query, ( 
-                execution_id, 
+                view_url, 
                 processor_id, 
                 parameters, 
                 executed
