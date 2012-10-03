@@ -12,7 +12,7 @@ import sys
 import MySQLdb
 import hashlib
 import logging
-
+import time
 #setup logger for this module
 log = logging.getLogger( "console_log" )
 
@@ -77,10 +77,12 @@ class ProcessingModule( object ) :
     #///////////////////////////////////////////////
     
     
-    def format_process_success( self, result = None ):
+    # modified tlodge: attach an id to the processing request here so that 
+    # it can be referenced by the user at the client that issued the request
+    def format_process_success( self, id, result = None):
         
         if ( result ) :
-            json_response = { 'success': True, 'return': result }
+            json_response = { 'success': True, 'return': result, 'id':id}
         else : 
             json_response = { 'success': True }
         
@@ -124,7 +126,7 @@ class ProcessingModule( object ) :
         #finally invoke the function
         try:
             result = sandbox.run( parameters )
-            return self.format_process_success( result )
+            return self.format_process_success(-1, result )
         
         #and catch any problems that occur in processing
         except:
@@ -168,7 +170,9 @@ class ProcessingModule( object ) :
             #obtain relevent info from the request object    
             user = request[ "user_id" ]
             query = request[ "query" ]
-                        
+            processor_id = request["access_token"]
+            #get the processor id here...
+            
         except:
             return self.format_process_failure(
                 "access_exception",
@@ -188,9 +192,17 @@ class ProcessingModule( object ) :
 
         #finally invoke the function
         try:
+            execution_time = time.time()
             result = sandbox.run( parameters )
-	    print result
-            return self.format_process_success( result )
+            m = hashlib.md5()
+            m.update('%f' % time.time())
+            id = m.hexdigest()
+            try:
+                self.db.insert_execution(execution_id=id, processor_id=processor_id,parameters=jsonParams, executed=execution_time)
+            except:
+                log.error("failed to store the execution details executionid: %s processor_id %s parameters: %s" % (id, processor_id, jsonParams))
+            
+            return self.format_process_success(id, result )
         
         #and catch any problems that occur in processing
         except:

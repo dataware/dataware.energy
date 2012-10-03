@@ -246,11 +246,15 @@ def user_get_static_file( path ):
 def invoke_processor():
     
     try:
+        
         access_token = request.forms.get( 'access_token' )
+        
         jsonParams = request.forms.get( 'parameters' )
+        
         result = pm.invoke_processor( 
             access_token, 
             jsonParams )
+        
         return result
     except Exception, e:
         raise e

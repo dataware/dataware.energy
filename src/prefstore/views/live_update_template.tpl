@@ -30,7 +30,10 @@
 		SUMMARY SECTION
 	------------------------------------------------------------------>
 	
+	
+	
     <div id="bar-demo"></div>
+    <h1> <span data-bind="text:name"></span></h1>
 </div>
 
 
@@ -47,19 +50,51 @@
 <script>
 
   var t = 1297110663, v = 70; // start time (seconds since epoch)
-  function UrlModel() {
-        this.urls = ko.observableArray([{time: t++, value: v = ~~Math.max(10, Math.min(90, v + 10 * (Math.random() - .5)))}]); 
+  
+  function myModel(data) {
+        var self = this;
+        
+        this.black = false;
+       
+        ko.extenders.logChange = function(target, option){
+        
+            target.subscribe(function(newValue){
+               console.log("option" + ":" + newValue);
+            });
+            return target;
+            
+        }
+      
+        this.hello=function(){console.log("eghehe")};
+        
+        this.items = ko.observableArray().extend({logChange: "oooh!"});
+        
+        this.name = ko.observable("Bod").extend({logChange: "first name"});
+        
+        this.toggleback= function(){
+            if (!self.black)
+                d3.select("body").transition().style("background-color", "black");
+            else
+                d3.select("body").transition().style("background-color", "white");
+            
+            self.black = !self.black;
+        }
+        //this.items.subscribe(function(x){console.log(x)});
   }
    
-  urls = new UrlModel();
-  ko.applyBindings(urls);
-  var data = urls.urls();
   
-  //d3.range(33).map(next); // starting dataset
-  
-  console.log(urls);
+  mymodel = new myModel();       
+  ko.applyBindings(mymodel);
+  mymodel.items(d3.range(33).map(next)); // starting dataset
+ 
    
+  console.log(mymodel.items());
+
+  
+ 
+        
   function next() {
+   
     return {
       time: ++t,
       value: v = ~~Math.max(10, Math.min(90, v + 10 * (Math.random() - .5)))
@@ -67,8 +102,10 @@
   }
 
   setInterval(function() {
-    //data.shift();
-    data.push(next());
+   
+    mymodel.items.shift();
+    mymodel.items.push(next());
+    mymodel.name(t + " hello");  
     redraw();
   }, 1500);
 
@@ -85,35 +122,53 @@
 
   var chart = d3.select("#bar-demo").append("svg")
      .attr("class", "chart")
-     .attr("width", w * 30)
+     .attr("width", w * 50)
      .attr("height", h);
 
   chart.selectAll("rect")
-     .data(data)
+     .data(mymodel.items())
      .enter().append("rect")
      .attr("x", function(d, i) { return x(i) - .5; })
      .attr("y", function(d) { return h - y(d.value) - .5; })
      .attr("width", w)
      .attr("height", function(d) { return y(d.value); });
 
-
-  function redraw(){
-   chart.selectAll("rect")
-     .data(data)
-     .enter().append("rect")
-     .attr("x", function(d, i) { return x(i) - .5; })
-     .attr("y", function(d) { return h - y(d.value) - .5; })
-     .attr("width", w)
-     .attr("height", function(d) { return y(d.value); });
+ 
   
-/*    chart.selectAll("rect")
-    .data(data)
-    .transition()
-    .duration(1000)
-    .attr("y", function(d) { return h - y(d.value) - .5; })
-    .attr("height", function(d) { return y(d.value); });*/
+  function redraw(){
+    
+    
+    //bind the chart to some data
+    
+    var rect =  chart.selectAll("rect")
+                     .data( mymodel.items(), function(d){return d.time;}) //index on timestamp
+   
+    
+    //insert the new data...
+    rect.enter()
+        .append("rect")
+        .on("click", function(d, i){alert('ehllo!' + d + " " + i)})
+        .attr("x", function(d, i) { return x(i+1) - .5; })
+        .attr("y", function(d) { return h - y(d.value) - .5; })
+        .attr("width", w)
+        .attr("height", function(d) { return y(d.value); })
+        .transition()
+        .duration(1000)
+        .attr("x", function(d, i) { return x(i) - .5; });
+        
+    //update current data
+    rect.on("click", function(d, i){mymodel.toggleback()})
+        .transition()
+        .duration(1000)
+        .attr("x", function(d, i) { return x(i) - .5; });
+        
+    //get rid of old items
+    rect.exit()
+        .remove();
+        
+    
   }
-
+  
 </script>
 
 <!-- FOOTER ------------------------------------------------------------------>

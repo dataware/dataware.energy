@@ -46,6 +46,7 @@ class DataDB( object ):
     TBL_DATAWARE_PROCESSORS = 'tblDatawareProcessors'
     TBL_DATAWARE_CATALOGS = 'tblDatawareCatalogs'
     TBL_DATAWARE_INSTALLS = 'tblDatawareInstalls'
+    TBL_DATAWARE_EXECUTIONS = 'tblDatawareExecutions'
     TBL_USER_DETAILS = 'tblUserDetails'
     CONFIG_FILE = "prefstore.cfg"
     SECTION_NAME = "DatawareDB"
@@ -99,7 +100,19 @@ class DataDB( object ):
                 FOREIGN KEY (catalog_uri) REFERENCES %s(catalog_uri) 
                 ON DELETE CASCADE ON UPDATE CASCADE
             ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
-        """  % ( DB_NAME, TBL_DATAWARE_INSTALLS, TBL_DATAWARE_CATALOGS ) ),            
+        """  % ( DB_NAME, TBL_DATAWARE_INSTALLS, TBL_DATAWARE_CATALOGS ) ),   
+         
+        ( TBL_DATAWARE_EXECUTIONS, """ 
+            CREATE TABLE %s.%s (
+                execution_id varchar(256) NOT NULL,
+                processor_id varchar(256) NOT NULL,                
+                parameters varchar(256) NOT NULL,
+                executed int(11) unsigned NOT NULL,
+                PRIMARY KEY (execution_id),
+                FOREIGN KEY (processor_id) REFERENCES %s(access_token) 
+                ON DELETE CASCADE ON UPDATE CASCADE
+            ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+        """  % ( DB_NAME, TBL_DATAWARE_EXECUTIONS, TBL_DATAWARE_PROCESSORS ) ),
     ] 
     
         
@@ -231,8 +244,23 @@ class DataDB( object ):
 
       
     #////////////////////////////////////////////////////////////////////////////////////////////
-
-
+    @safety_mysql   
+    def insert_execution(self, execution_id, processor_id,parameters, executed):
+        query = """
+             INSERT INTO %s.%s VALUES ( %s, %s, %s, %s)
+        """  % ( self.DB_NAME, self.TBL_DATAWARE_EXECUTIONS, '%s', '%s', '%s', '%s') 
+        
+        self.cursor.execute( 
+            query, ( 
+                execution_id, 
+                processor_id, 
+                parameters, 
+                executed
+            ) 
+        )
+        self.commit()
+    
+    #////////////////////////////////////////////////////////////////////////////////////////////
     @safety_mysql   
     def insert_processor( self, access_token, client_id, user_name, expiry_time, query_code ):
        
