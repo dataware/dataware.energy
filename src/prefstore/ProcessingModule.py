@@ -280,15 +280,13 @@ class ProcessingModule( object ) :
         log.info("generated access token %s" % access_token)
         
         try:
-            log.info("inserting processor")
             self.db.insert_processor( 
                 access_token, 
                 client_id, 
                 install[ "user_id" ],
                 expiry_time, 
                 query 
-            )
-            log.info("never get here")       
+            )      
             return self.format_register_success( access_token ) 
         
         #if the token already exists an Integrity Error will be thrown

@@ -152,10 +152,10 @@ def install_complete():
         redirect( "/" )
         #return "installation success"
 
-#support for a resource owner to test a requested processor
-@route( '/view_executions', method = ["GET", "POST"])
+
+@route( '/view_executions')
 def view_executions():   
-    
+   
     try:
         user = check_login()
         if ( not user ): redirect( ROOT_PAGE )
@@ -165,8 +165,10 @@ def view_executions():
         return error( e.msg )
     except Exception, e:
         return error( e ) 
+   
+    executions = datadb.fetch_executions()    
     
-    
+    return template('executions_template',  user=user, executions=executions) 
     
 @route( '/test_query', method = ["GET", "POST"])
 def test_query():
@@ -201,7 +203,6 @@ def test_query():
                         if isinstance(values[0], dict):
                             keys = list(values[0].keys())
                             return template('result_template', user=user, result=values, keys=keys)
-            log.info("returning data!")   
             return data
             
         except Exception, e:

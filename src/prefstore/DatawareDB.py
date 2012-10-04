@@ -260,6 +260,16 @@ class DataDB( object ):
         )
         self.commit()
     
+    @safety_mysql 
+    def fetch_executions(self):
+        query = """
+             SELECT * FROM %s.%s
+        """  % ( self.DB_NAME, self.TBL_DATAWARE_EXECUTIONS) 
+        
+        self.cursor.execute( query )
+        results = self.cursor.fetchall()
+        return results
+        
     #////////////////////////////////////////////////////////////////////////////////////////////
     @safety_mysql   
     def insert_processor( self, access_token, client_id, user_name, expiry_time, query_code ):
