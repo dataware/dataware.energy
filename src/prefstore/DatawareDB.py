@@ -108,19 +108,21 @@ class DataDB(object):
                 CREATE TABLE %s.%s (
                     catalog_uri varchar(256) NOT NULL,                
                     resource_id varchar(256) NOT NULL,
+                    resource_name varchar(256) NOT NULL,
                     registered int(10) unsigned DEFAULT NULL,
-                    PRIMARY KEY (catalog_uri)
+                    PRIMARY KEY (catalog_uri, resource_id)
                 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
             """  % (self.DB_NAME, self.TBL_DATAWARE_CATALOGS ) ),  
             
             ( self.TBL_DATAWARE_INSTALLS, """ 
                 CREATE TABLE %s.%s (
                     user_id varchar(256) NOT NULL,
-                    catalog_uri varchar(256) NOT NULL,                
+                    catalog_uri varchar(256) NOT NULL,   
+                    resource_name varchar(256) NOT NULL,             
                     install_token varchar(256),
                     state varchar(256) NOT NULL,
                     registered int(10) unsigned DEFAULT NULL,
-                    PRIMARY KEY (user_id),
+                    PRIMARY KEY (user_id, resource_name),
                     FOREIGN KEY (catalog_uri) REFERENCES %s(catalog_uri) 
                     ON DELETE CASCADE ON UPDATE CASCADE
                 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
@@ -339,22 +341,22 @@ class DataDB(object):
     
     
     @safety_mysql                    
-    def insert_catalog( self, catalog_uri, resource_id ):
+    def insert_catalog( self, catalog_uri, resource_id, resource_name):
             
         if ( catalog_uri ):
             
             log.info( 
-                "%s %s: Inserting catalog '%s' in database with resource_id '%s'" 
-                % ( self.name, "insert_catalog", catalog_uri, resource_id ) 
+                "%s %s: Inserting catalog '%s' in database with resource_id '%s' and name '%s'" 
+                % ( self.name, "insert_catalog", catalog_uri, resource_id, resource_name ) 
             );
             
             query = """
-                  INSERT INTO %s.%s ( catalog_uri, resource_id, registered ) 
-                  VALUES ( %s, %s, %s )
-              """  % ( self.DB_NAME, self.TBL_DATAWARE_CATALOGS, '%s', '%s', '%s', )
+                  INSERT INTO %s.%s ( catalog_uri, resource_id, resource_name, registered ) 
+                  VALUES ( %s, %s, %s, %s )
+              """  % ( self.DB_NAME, self.TBL_DATAWARE_CATALOGS, '%s', '%s', '%s', '%s', )
             
             state = self.generateAccessToken()
-            self.cursor.execute( query, ( catalog_uri, resource_id, time(), ) )
+            self.cursor.execute( query, ( catalog_uri, resource_id, resource_name, time(), ) )
                 
             return state;
         
@@ -370,14 +372,14 @@ class DataDB(object):
     
     
     @safety_mysql                    
-    def fetch_catalog( self, catalog_uri ):
+    def fetch_catalog( self, catalog_uri, resource_name ):
             
         if catalog_uri :
             query = """
-                SELECT * FROM %s.%s t where catalog_uri = %s 
-            """  % ( self.DB_NAME, self.TBL_DATAWARE_CATALOGS, '%s' ) 
+                SELECT * FROM %s.%s t where catalog_uri = %s  AND resource_name = %s
+            """  % ( self.DB_NAME, self.TBL_DATAWARE_CATALOGS, '%s', '%s' ) 
         
-            self.cursor.execute( query, ( catalog_uri, ) )
+            self.cursor.execute( query, ( catalog_uri, resource_name) )
             row = self.cursor.fetchone()
 
             if not row is None:
@@ -393,25 +395,25 @@ class DataDB(object):
     
     
     @safety_mysql                    
-    def insert_install( self, user_id, catalog_uri ):
+    def insert_install( self, user_id, catalog_uri, resource_name ):
             
         if ( user_id and catalog_uri ):
             
             log.info( 
-                "%s %s: Initiating user '%s' installation to '%s' in database" 
-                % ( self.name, "insert_install", user_id, catalog_uri, ) 
+                "%s %s: Initiating user '%s' installation to '%s' resource '%s' in database" 
+                % ( self.name, "insert_install", user_id, catalog_uri, resource_name ) 
             );
             
             
             query = """
                   INSERT INTO %s.%s 
-                  ( user_id, catalog_uri, install_token, state, registered ) 
-                  VALUES ( %s, %s, null, %s, %s )
-              """  % ( self.DB_NAME, self.TBL_DATAWARE_INSTALLS, '%s', '%s', '%s', '%s' )
+                  ( user_id, catalog_uri, resource_name, install_token, state, registered ) 
+                  VALUES ( %s, %s, %s, null, %s, %s )
+              """  % ( self.DB_NAME, self.TBL_DATAWARE_INSTALLS, '%s', '%s', '%s', '%s', '%s' )
             
             state = self.generateAccessToken()
             self.cursor.execute( query, 
-                ( user_id, catalog_uri, state, time(), ) )
+                ( user_id, catalog_uri, resource_name, state, time(), ) )
                 
             return state;
         
@@ -514,14 +516,14 @@ class DataDB(object):
     
     
     @safety_mysql                    
-    def fetch_install( self, user_id, catalog_uri ):
+    def fetch_install( self, user_id, catalog_uri, resource_name ):
             
         if user_id and catalog_uri:
             query = """
-                SELECT * FROM %s.%s t WHERE user_id = %s AND catalog_uri = %s
-            """  % ( self.DB_NAME, self.TBL_DATAWARE_INSTALLS, '%s', '%s' ) 
+                SELECT * FROM %s.%s t WHERE user_id = %s AND catalog_uri = %s AND resource_name = %s
+            """  % ( self.DB_NAME, self.TBL_DATAWARE_INSTALLS, '%s', '%s', '%s' ) 
         
-            self.cursor.execute( query, ( user_id, catalog_uri ) )
+            self.cursor.execute( query, ( user_id, catalog_uri, resource_name ) )
             row = self.cursor.fetchone()
 
             if not row is None:

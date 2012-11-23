@@ -25,7 +25,7 @@
 	function install_resource() {
 		$.ajax({
 			type: 'GET',
-			url: '/install_request?catalog_uri=' +  $("#catalog_uri").val(),
+			url: '/install_request?catalog_uri=' +  $("#catalog_uri").val() + '&resource_name=urls',
 			success: function( data, status  ) {
 
 				data = eval( '(' + data + ')' );

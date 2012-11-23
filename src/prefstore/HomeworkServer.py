@@ -100,9 +100,14 @@ def install_request():
         return error( e )        
 
     catalog_uri = request.GET.get( "catalog_uri", None )
+    resource_name = request.GET.get( "resource_name", None )
     
-    try:
-        url = im.initiate_install( user[ "user_id" ], catalog_uri  )
+    print "getting resource: %s " % resource_name
+    print resources[resource_name]
+    print "%s" % resources[resource_name]['resource_uri']
+    
+    try: 
+        url = im.initiate_install( user[ "user_id" ], catalog_uri, resource_name, resources[resource_name]['resource_uri'])
         return format_success( url )
     except ParameterException, e:
         return format_failure( "resource", e.msg )
@@ -812,7 +817,11 @@ if __name__ == '__main__' :
     REALM =  Config.get("DatawareResource", "realm")    #WEB_PROXY = "http://mainproxy.nottingham.ac.uk:8080"
     
     
-    resources =  json.loads(Config.get("DatawareResources", "resources"))['resources'] 
+    resources =  json.loads(Config.get("DatawareResources", "resources")) 
+    
+    print resources
+    print resources['energy']
+    print resources['urls']
     
     #-------------------------------
     # declare initialization in logs

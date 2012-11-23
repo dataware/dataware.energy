@@ -51,7 +51,7 @@ class InstallationModule( object ) :
     #///////////////////////////////////////////////
 
             
-    def initiate_install( self, user_id, catalog_uri ):
+    def initiate_install( self, user_id, catalog_uri, resource_name, resource_uri ):
         
         #check that a valid catalog_uri has been supplied
         if not self._is_valid_uri( catalog_uri ):
@@ -63,10 +63,10 @@ class InstallationModule( object ) :
         
         #obtain the resource_id assigned by the catalog - or
         #if it doesn't exist, register ourselves at the catalog
-        resource_id = self._check_registration( catalog_uri )
+        resource_id = self._check_registration( catalog_uri, resource_name, resource_uri )
        
         #check to see if we have already made the install request
-        install = self.db.fetch_install( user_id, catalog_uri ) 
+        install = self.db.fetch_install( user_id, catalog_uri, resource_name ) 
         
         #if we have, use the state details we already have:
         if ( install ):
@@ -75,7 +75,7 @@ class InstallationModule( object ) :
         #otherwise initiate the request, leaving it pending in
         #the database and get a new state id.        
         else:
-            state = self.db.insert_install( user_id, catalog_uri ) 
+            state = self.db.insert_install( user_id, catalog_uri, resource_name ) 
             self.db.commit()
             
         #finally build the uri that we will redirect the user to
@@ -200,10 +200,10 @@ class InstallationModule( object ) :
     #///////////////////////////////////////////////
     
         
-    def _check_registration( self, catalog_uri ):
+    def _check_registration( self, catalog_uri, resource_name, resource_uri ):
     
-        #determine if we have already registered at this resource
-        catalog = self.db.fetch_catalog( catalog_uri )
+        #determine if we have already registered at this resource - must check the resource_name too!
+        catalog = self.db.fetch_catalog( catalog_uri, resource_name )
         
         #if so simply return the resource_id the catalog gave us...
         if catalog:
@@ -211,9 +211,9 @@ class InstallationModule( object ) :
         
         #and if not register ourselves with the catalog, and get one...
         else:
-            catalog_response = self._make_registration_request( catalog_uri )
+            catalog_response = self._make_registration_request( catalog_uri, resource_name, resource_uri )
             resource_id = self._parse_registration_results( catalog_response )
-            self.db.insert_catalog( catalog_uri, resource_id )
+            self.db.insert_catalog( catalog_uri, resource_id, resource_name )
             self.db.commit()
             return resource_id
         
@@ -239,7 +239,7 @@ class InstallationModule( object ) :
     #///////////////////////////////////////////////
 
             
-    def _make_registration_request( self, catalog_uri ):
+    def _make_registration_request( self, catalog_uri, resource_name, resource_uri ):
         
         #if necessary setup a proxy
         if ( self.web_proxy  ):
@@ -251,8 +251,8 @@ class InstallationModule( object ) :
         #resource_id that they assign us   
         try:
             data = urllib.urlencode({
-                'resource_name': self.resource_name,
-                'redirect_uri': self.redirect_uri, })
+                'resource_name': resource_name,
+                'redirect_uri': resource_uri, })
             url = "%s/resource_register" % ( catalog_uri, )
             req = urllib2.Request( url, data )
             response = urllib2.urlopen( req )
