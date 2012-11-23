@@ -39,58 +39,55 @@ def safety_mysql( fn ) :
 #///////////////////////////////////////
 
 
-class HomeDB( object ):
+class HomeDB(object):
     ''' classdocs '''
-    
-    DB_NAME = 'Homework'
-    TBL_TERM_URLS = 'DNSRequest'
-    TBL_TERM_POWER = 'EnergyUse'  
-    CONFIG_FILE = "prefstore.cfg"
-    SECTION_NAME = "HomeuserDB"
-
-
-     #///////////////////////////////////////
-
-  
-    createQueries = [ 
-               
-        ( TBL_TERM_URLS, """
-            CREATE TABLE %s.%s (
-                ts varchar(20), 
-                macaddr varchar(19), 
-                ipaddr varchar(16), 
-                url varchar(128),
-                PRIMARY KEY (ts, macaddr, url)
-            ) DEFAULT CHARSET=latin1;
-        """  % ( DB_NAME, TBL_TERM_URLS ) ),
-       
-        ( TBL_TERM_POWER, """ 
-            CREATE TABLE %s.%s (
-                ts varchar(20) NOT NULL,
-                sensorid int(11),
-                watts float,
-                PRIMARY KEY (ts, sensorid)
-            ) DEFAULT CHARSET=latin1;
-        """  % ( DB_NAME, TBL_TERM_POWER ) ),            
-    ] 
     
     #///////////////////////////////////////
     
-    
-    def __init__( self, name = "HomeuserDB" ):
+    def __init__( self, configfile, section, name = "ResourceDB" ):
             
         #MysqlDb is not thread safe, so program may run more
         #than one connection. As such naming them is useful.
         self.name = name
+        self.CONFIG_FILE = configfile
+        self.SECTION_NAME = section
         
         Config = ConfigParser.ConfigParser()
         Config.read( self.CONFIG_FILE )
         self.hostname = Config.get( self.SECTION_NAME, "hostname" )
         self.username =  Config.get( self.SECTION_NAME, "username" )
         self.password =  Config.get( self.SECTION_NAME, "password" )
-        self.dbname = Config.get( self.SECTION_NAME, "dbname" )
+        self.DB_NAME = Config.get( self.SECTION_NAME, "dbname" )
+        
         self.connected = False;
         
+        self.TBL_TERM_URLS = 'DNSRequest'
+        self.TBL_TERM_POWER = 'EnergyUse'  
+        
+    
+         #///////////////////////////////////////
+    
+        self.createQueries = [ 
+                   
+            ( self.TBL_TERM_URLS, """
+                CREATE TABLE %s.%s (
+                    ts varchar(20), 
+                    macaddr varchar(19), 
+                    ipaddr varchar(16), 
+                    url varchar(128),
+                    PRIMARY KEY (ts, macaddr, url)
+                ) DEFAULT CHARSET=latin1;
+            """  % ( self.DB_NAME , self.TBL_TERM_URLS ) ),
+           
+            ( self.TBL_TERM_POWER, """ 
+                CREATE TABLE %s.%s (
+                    ts varchar(20) NOT NULL,
+                    sensorid int(11),
+                    watts float,
+                    PRIMARY KEY (ts, sensorid)
+                ) DEFAULT CHARSET=latin1;
+            """  % ( self.DB_NAME , self.TBL_TERM_POWER ) ),            
+        ] 
         
     #///////////////////////////////////////
     
@@ -103,7 +100,7 @@ class HomeDB( object ):
             host=self.hostname,
             user=self.username,
             passwd=self.password,
-            db=self.dbname
+            db=self.DB_NAME
         )
  
         self.cursor = self.conn.cursor( MySQLdb.cursors.DictCursor )

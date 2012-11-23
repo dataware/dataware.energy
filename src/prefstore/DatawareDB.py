@@ -39,102 +39,106 @@ def safety_mysql( fn ) :
 #///////////////////////////////////////
 
     
-class DataDB( object ):
+class DataDB(object):
     ''' classdocs '''
-    
-    DB_NAME = 'dataware'
-    TBL_DATAWARE_PROCESSORS = 'tblDatawareProcessors'
-    TBL_DATAWARE_CATALOGS = 'tblDatawareCatalogs'
-    TBL_DATAWARE_INSTALLS = 'tblDatawareInstalls'
-    TBL_DATAWARE_EXECUTIONS = 'tblDatawareExecutions'
-    TBL_USER_DETAILS = 'tblUserDetails'
-    CONFIG_FILE = "prefstore.cfg"
-    SECTION_NAME = "DatawareDB"
-    
-    #///////////////////////////////////////
-
-  
-    createQueries = [ 
-               
-        ( TBL_DATAWARE_PROCESSORS, """
-            CREATE TABLE %s.%s (
-                access_token varchar(256) NOT NULL,
-                client_id varchar(256) NOT NULL,
-                user_id varchar(256) NOT NULL,
-                expiry_time int(11) unsigned NOT NULL,
-                query text NOT NULL,
-                checksum varchar(256) NOT NULL,
-                PRIMARY KEY (access_token),
-                UNIQUE KEY (client_id,user_id,checksum)
-            ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
-        """  % ( DB_NAME, TBL_DATAWARE_PROCESSORS ) ),
-        
-        ( TBL_USER_DETAILS, """
-            CREATE TABLE %s.%s (
-            user_id varchar(256) NOT NULL,
-            user_name varchar(64),
-            email varchar(256),
-            registered int(10) unsigned,        
-            PRIMARY KEY (user_id), UNIQUE KEY `UNIQUE` (`user_name`)
-            ) 
-            DEFAULT CHARSET=latin1;
-        """  % ( DB_NAME, TBL_USER_DETAILS ) ),  
-        
-        ( TBL_DATAWARE_CATALOGS, """ 
-            CREATE TABLE %s.%s (
-                catalog_uri varchar(256) NOT NULL,                
-                resource_id varchar(256) NOT NULL,
-                registered int(10) unsigned DEFAULT NULL,
-                PRIMARY KEY (catalog_uri)
-            ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
-        """  % ( DB_NAME, TBL_DATAWARE_CATALOGS ) ),  
-        
-        ( TBL_DATAWARE_INSTALLS, """ 
-            CREATE TABLE %s.%s (
-                user_id varchar(256) NOT NULL,
-                catalog_uri varchar(256) NOT NULL,                
-                install_token varchar(256),
-                state varchar(256) NOT NULL,
-                registered int(10) unsigned DEFAULT NULL,
-                PRIMARY KEY (user_id),
-                FOREIGN KEY (catalog_uri) REFERENCES %s(catalog_uri) 
-                ON DELETE CASCADE ON UPDATE CASCADE
-            ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
-        """  % ( DB_NAME, TBL_DATAWARE_INSTALLS, TBL_DATAWARE_CATALOGS ) ),   
          
-        ( TBL_DATAWARE_EXECUTIONS, """ 
-            CREATE TABLE %s.%s (
-                view_url varchar(256) NOT NULL,
-                processor_id varchar(256) NOT NULL,                
-                parameters varchar(256) NOT NULL,
-                executed int(11) unsigned NOT NULL,
-                PRIMARY KEY (view_url),
-                FOREIGN KEY (processor_id) REFERENCES %s(access_token) 
-                ON DELETE CASCADE ON UPDATE CASCADE
-            ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
-        """  % ( DB_NAME, TBL_DATAWARE_EXECUTIONS, TBL_DATAWARE_PROCESSORS ) ),
-    ] 
-    
-        
     #///////////////////////////////////////
     
     
-    def __init__( self, name = "DatawareDB" ):
+    def __init__( self, configfile, section, name="DatawareDB"):
             
         #MysqlDb is not thread safe, so program may run more
         #than one connection. As such naming them is useful.
         self.name = name
+        self.CONFIG_FILE = configfile
+        self.SECTION_NAME = section
         
         Config = ConfigParser.ConfigParser()
         Config.read( self.CONFIG_FILE )
         log.info("%s", self.SECTION_NAME);
+        
+        
         self.hostname = Config.get( self.SECTION_NAME, "hostname" )
         self.username =  Config.get( self.SECTION_NAME, "username" )
         self.password =  Config.get( self.SECTION_NAME, "password" )
-        self.dbname = Config.get( self.SECTION_NAME, "dbname" )
-        log.info("%s %s %s" % (self.hostname, self.username, self.dbname));
-        self.connected = False;
+        self.DB_NAME = Config.get( self.SECTION_NAME, "dbname" )
         
+        log.info("%s %s %s" % (self.hostname, self.username, self.DB_NAME));
+        
+        self.connected = False;
+       
+    
+        self.TBL_DATAWARE_PROCESSORS = 'tblDatawareProcessors'
+        self.TBL_DATAWARE_CATALOGS = 'tblDatawareCatalogs'
+        self.TBL_DATAWARE_INSTALLS = 'tblDatawareInstalls'
+        self.TBL_DATAWARE_EXECUTIONS = 'tblDatawareExecutions'
+        self.TBL_USER_DETAILS = 'tblUserDetails'
+       
+        
+        #///////////////////////////////////////
+    
+      
+        self.createQueries = [ 
+                   
+            ( self.TBL_DATAWARE_PROCESSORS, """
+                CREATE TABLE %s.%s (
+                    access_token varchar(256) NOT NULL,
+                    client_id varchar(256) NOT NULL,
+                    user_id varchar(256) NOT NULL,
+                    expiry_time int(11) unsigned NOT NULL,
+                    query text NOT NULL,
+                    checksum varchar(256) NOT NULL,
+                    PRIMARY KEY (access_token),
+                    UNIQUE KEY (client_id,user_id,checksum)
+                ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+            """  % ( self.DB_NAME, self.TBL_DATAWARE_PROCESSORS ) ),
+            
+            ( self.TBL_USER_DETAILS, """
+                CREATE TABLE %s.%s (
+                user_id varchar(256) NOT NULL,
+                user_name varchar(64),
+                email varchar(256),
+                registered int(10) unsigned,        
+                PRIMARY KEY (user_id), UNIQUE KEY `UNIQUE` (`user_name`)
+                ) 
+                DEFAULT CHARSET=latin1;
+            """  % ( self.DB_NAME, self.TBL_USER_DETAILS ) ),  
+            
+            ( self.TBL_DATAWARE_CATALOGS, """ 
+                CREATE TABLE %s.%s (
+                    catalog_uri varchar(256) NOT NULL,                
+                    resource_id varchar(256) NOT NULL,
+                    registered int(10) unsigned DEFAULT NULL,
+                    PRIMARY KEY (catalog_uri)
+                ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+            """  % (self.DB_NAME, self.TBL_DATAWARE_CATALOGS ) ),  
+            
+            ( self.TBL_DATAWARE_INSTALLS, """ 
+                CREATE TABLE %s.%s (
+                    user_id varchar(256) NOT NULL,
+                    catalog_uri varchar(256) NOT NULL,                
+                    install_token varchar(256),
+                    state varchar(256) NOT NULL,
+                    registered int(10) unsigned DEFAULT NULL,
+                    PRIMARY KEY (user_id),
+                    FOREIGN KEY (catalog_uri) REFERENCES %s(catalog_uri) 
+                    ON DELETE CASCADE ON UPDATE CASCADE
+                ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+            """  % ( self.DB_NAME, self.TBL_DATAWARE_INSTALLS, self.TBL_DATAWARE_CATALOGS ) ),   
+             
+            ( self.TBL_DATAWARE_EXECUTIONS, """ 
+                CREATE TABLE %s.%s (
+                    execution_id int(11) AUTO_INCREMENT,
+                    processor_id varchar(256) NOT NULL,                
+                    parameters varchar(256) NOT NULL,
+                    result text,
+                    executed int(11) unsigned NOT NULL,
+                    PRIMARY KEY (execution_id),
+                    FOREIGN KEY (processor_id) REFERENCES %s(access_token) 
+                    ON DELETE CASCADE ON UPDATE CASCADE
+                ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+            """  % ( self.DB_NAME, self.TBL_DATAWARE_EXECUTIONS, self.TBL_DATAWARE_PROCESSORS ) ),
+        ] 
         
     #///////////////////////////////////////
     
@@ -147,7 +151,7 @@ class DataDB( object ):
             host=self.hostname,
             user=self.username,
             passwd=self.password,
-            db=self.dbname
+            db=self.DB_NAME
         )
  
         self.cursor = self.conn.cursor( MySQLdb.cursors.DictCursor )
@@ -245,16 +249,17 @@ class DataDB( object ):
       
     #////////////////////////////////////////////////////////////////////////////////////////////
     @safety_mysql   
-    def insert_execution(self, view_url, processor_id, parameters, executed):
+    def insert_execution(self, processor_id, parameters, result, executed):
         query = """
-             INSERT INTO %s.%s VALUES ( %s, %s, %s, %s)
+             INSERT INTO %s.%s (processor_id, parameters, result, executed) VALUES ( %s, %s, %s, %s)
         """  % ( self.DB_NAME, self.TBL_DATAWARE_EXECUTIONS, '%s', '%s', '%s', '%s') 
         
+        
         self.cursor.execute( 
-            query, ( 
-                view_url, 
+            query, (  
                 processor_id, 
-                parameters, 
+                parameters,
+                result,
                 executed
             ) 
         )

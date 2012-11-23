@@ -13,6 +13,7 @@ import MySQLdb
 import hashlib
 import logging
 import time
+
 #setup logger for this module
 log = logging.getLogger( "console_log" )
 
@@ -40,6 +41,7 @@ class ProcessingModule( object ) :
     def __init__( self, datadb, homedb ):
         self.db = datadb;       
         self.homedb = homedb;
+        
         self.sandbox_builtins = __builtin__.__dict__.copy()
         
         for command in __builtin__.__dict__ :
@@ -140,11 +142,9 @@ class ProcessingModule( object ) :
     #///////////////////////////////////////////////
     
     
-    def invoke_processor( self, processor_token, jsonParams, view_url=None):
+    def invoke_processor( self, processor_token, jsonParams):
         
-        log.info("in here...")
-        
-        log.info("%s" % view_url)
+        print "invoking processor!"
         
         if processor_token is None :
             return self.format_process_failure(
@@ -160,9 +160,12 @@ class ProcessingModule( object ) :
                 "incorrectly formatted JSON parameters"
             ) 
     
+        print "am now here..."
+        
         try:
             request = self.db.fetch_processor( processor_token )
             if request is None:
+                print "request is none!!"
                 return self.format_process_failure(
                     "access_exception",
                     "Invalid access token"
@@ -173,7 +176,7 @@ class ProcessingModule( object ) :
             query = request[ "query" ]
             processor_id = request["access_token"]
             #get the processor id here...
-            
+            print "hmmm seem to be here?"
         except:
             return self.format_process_failure(
                 "access_exception",
@@ -195,12 +198,12 @@ class ProcessingModule( object ) :
         try:
             execution_time = time.time()
             result = sandbox.run( parameters ) 
-            log.info("inserting execution with url %s" % view_url)
-        
+           
             try:
-                self.db.insert_execution(view_url=view_url, processor_id=processor_id,parameters=jsonParams, executed=execution_time)
+                self.db.insert_execution(processor_id=processor_id,parameters=jsonParams, result=json.dumps(result), executed=execution_time)
             except:
-                log.error("failed to store the execution details executionid: %s processor_id %s parameters: %s" % (id, processor_id, jsonParams))
+                log.error("failed to store the execution details : processor_id %s parameters: %s " % (processor_id, jsonParams))
+            
             return self.format_process_success(result )
         
         #and catch any problems that occur in processing
@@ -308,6 +311,8 @@ class ProcessingModule( object ) :
     
     def revoke_processor( self, install_token, access_token ):
         
+        log.error("in revoke processor!")
+        
         #check that the shared_secret is correct for this user_id
         try:
             if not access_token :
@@ -315,18 +320,20 @@ class ProcessingModule( object ) :
                     "revoke_failure",
                     "A processor_token has not been supplied"
                 ) 
-                
+            log.error("getting install!")
             install = self.db.authenticate( install_token )
-        
+            log.error("got install!")
+            
             if ( not install ) or install[ "user_id" ] == None:
                 return self.format_register_failure(
                     "revoke_failure",
                     "no user found corresponding to that install_token"
                 ) 
-            
+            log.error("deleting processor!")
             if self.db.delete_processor( install[ "user_id" ], access_token ) :
+                log.error("deleteed processor!")
                 return self.format_register_success()
-                 
+             #don't we also have to delete the install?    
             else :
                 return self.format_register_failure(
                     "revoke_failure",

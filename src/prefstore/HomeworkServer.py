@@ -8,17 +8,25 @@ from ProcessingModule import *      #@UnusedWildImport
 from InstallationModule import *    #@UnusedWildImport
 from DatawareDB import *            #@UnusedWildImport
 from HomeuserDB import *           #@UnusedWildImport
+from Worker import *
 import time                         #@Reimport
 import OpenIDManager
 import logging.handlers
 import math
+import Queue
+import json
 
 #//////////////////////////////////////////////////////////
 # SETUP LOGGING FOR THIS MODULE
 #//////////////////////////////////////////////////////////
 
+pid = str(os.getpid())
+print "pid is %s" % pid
+
 log = logging.getLogger( "console_log" )
+
 data_log = logging.getLogger( "data_log" )
+
 
 class std_writer( object ):
     def __init__( self, msg ):
@@ -196,7 +204,6 @@ def test_query():
             log.info(result)
             
             if result['success']:
-                log.info("success!!")
                 values = result['return']
                 if isinstance(values, list):
                     if len(values) > 0:
@@ -222,14 +229,12 @@ def test_query():
             log.info(result)
             
             if result['success']:
-                log.info("success!!")
                 values = result['return']
                 if isinstance(values, list):
                     if len(values) > 0:
                         if isinstance(values[0], dict):
                             keys = list(values[0].keys())
                             return template('result_template', result=values, keys=keys)
-            log.info("returning data!")   
             return data
             
     
@@ -266,17 +271,26 @@ def invoke_processor():
         
         jsonParams = request.forms.get( 'parameters' )
         
-        view_url = request.forms.get( 'view_url' )
+        result_url = request.forms.get( 'result_url' )
         
-        result = pm.invoke_processor( 
-            access_token, 
-            jsonParams,
-            view_url)
+        pqueue.put({'access_token':access_token, 'jsonParams':jsonParams, 'result_url':result_url})
         
-        return result
+        return json.dumps({ 
+            'success':True
+        })
+        
+        #result = pm.invoke_processor( 
+        #    access_token, 
+        #    jsonParams,
+        #    result_url)
+        
+       
     except Exception, e:
         raise e
-     
+        return json.dumps({ 
+            'success':False,        
+            'error':e  
+        })            
 
 #///////////////////////////////////////////////
  
@@ -310,13 +324,14 @@ def permit_processor():
 #///////////////////////////////////////////////
  
  
-@route( 'revoke_processor', method = "POST" )
+@route( '/revoke_processor', method = "POST" )
 def revoke_processor( user_name = None ):
-    
+    log.info("revoking processor! %s" % user_name);
     try:
         install_token = request.forms.get( 'install_token' )
         access_token = request.forms.get( 'access_token' )
-
+        
+        
         result = pm.revoke_processor( 
             install_token=install_token,
             access_token=access_token,
@@ -336,7 +351,7 @@ def revoke_processor( user_name = None ):
 
 @route( '/login', method = "GET" )
 def openID_login():
-
+    
     try: 
         username = request.GET[ 'username' ]    
     except: 
@@ -513,9 +528,9 @@ def query_url():
 def user_register():
     
     try:
-        log.info("extracting  id...");
+       
         user_id = extract_user_id()
-        log.info("got id %s" % user_id);
+       
     except LoginException, e:
         return error( e.msg )
     except Exception, e:
@@ -665,8 +680,7 @@ def liveupdate( ):
     
 @route( '/', method = "GET" )     
 @route( '/home', method = "GET" )
-def home( ):
-
+def home( ):     
     try:
         user = check_login()
     except RegisterException, e:
@@ -739,6 +753,15 @@ def summary():
 
 if __name__ == '__main__' :
 
+    #print "\n".join(sys.argv)
+    
+    print "config file: %s" % sys.argv[1];
+    
+    configfile = sys.argv[1]
+    
+  
+   
+    
     #-------------------------------
     # setup logging
     #-------------------------------
@@ -776,17 +799,21 @@ if __name__ == '__main__' :
     #-------------------------------
     # constants
     #-------------------------------
+    Config = ConfigParser.ConfigParser()
+    Config.read(configfile)
+    
     EXTENSION_COOKIE = "prefstore_logged_in"
-    PORT = 9000
+    PORT = Config.get("DatawareResource", "port")
     HOST = "0.0.0.0"  
     BOTTLE_QUIET = True 
     ROOT_PAGE = "/"
-    RESOURCE_NAME = "homework"
-    RESOURCE_URI = "http://hwresource.block49.net:9000"
-    #REALM = "http://www.prefstore.org"
-    REALM = "http://hwresource.block49.net:9000"
-    #WEB_PROXY = "http://mainproxy.nottingham.ac.uk:8080"
-            
+    RESOURCE_NAME = Config.get("DatawareResource", "resource_name")
+    RESOURCE_URI = Config.get("DatawareResource", "resource_uri")    #REALM = "http://www.prefstore.org"
+    REALM =  Config.get("DatawareResource", "realm")    #WEB_PROXY = "http://mainproxy.nottingham.ac.uk:8080"
+    
+    
+    resources =  json.loads(Config.get("DatawareResources", "resources"))['resources'] 
+    
     #-------------------------------
     # declare initialization in logs
     #-------------------------------        
@@ -803,12 +830,11 @@ if __name__ == '__main__' :
     #---------------------------------
     try:
        
-        
-        homedb = HomeDB()
+        homedb = HomeDB(configfile, "ResourceDB")
         homedb.connect()
         homedb.check_tables()
         
-        datadb = DataDB()
+        datadb = DataDB(configfile, "DatawareDB" )
         datadb.connect()
         datadb.check_tables()
         
@@ -826,6 +852,11 @@ if __name__ == '__main__' :
     try:    
         pm = ProcessingModule( datadb, homedb )
         im = InstallationModule( RESOURCE_NAME, RESOURCE_URI, datadb )
+        pqueue = Queue.Queue()
+        worker = Worker(pqueue, pm)
+        worker.daemon = True
+        worker.start()
+        #pqueue.join()
         log.info( "module initialization completed... [SUCCESS]" );
     except Exception, e:
         log.error( "module initialization error: %s" % ( e, ) )

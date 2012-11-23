@@ -18,7 +18,7 @@
 	 
 	$( document ).ready( function() {
 		$( 'a.menu_button' ).click( function() {
-			self.parent.location= PREFSTORE + $( this ).attr('id');
+			self.parent.location=  $( this ).attr('id');
 		});
 	});
 </script>
