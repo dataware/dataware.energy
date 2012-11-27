@@ -13,6 +13,7 @@ import MySQLdb
 import hashlib
 import logging
 import time
+import SqlParser
 
 #setup logger for this module
 log = logging.getLogger( "console_log" )
@@ -38,9 +39,9 @@ class ProcessingModule( object ) :
     #///////////////////////////////////////////////
     
     
-    def __init__( self, datadb, homedb ):
+    def __init__( self, datadb, resourcedb ):
         self.db = datadb;       
-        self.homedb = homedb;
+        self.resourcedb = resourcedb;
         
         self.sandbox_builtins = __builtin__.__dict__.copy()
         
@@ -138,13 +139,79 @@ class ProcessingModule( object ) :
 
    
    
-   
-    #///////////////////////////////////////////////
-    
-    
-    def invoke_processor( self, processor_token, jsonParams):
+    def invoke_processor_sql(self, processor_token, jsonParams):
+            
+        if processor_token is None :
+            
+            return self.format_process_failure(
+                "access_exception",
+                "Access token has not been supplied"
+            ) 
+
+        try:
         
-        print "invoking processor!"
+            parameters = json.loads( jsonParams ) if jsonParams else {}
+        
+        except:
+            return self.format_process_failure(
+                "access_exception",
+                "incorrectly formatted JSON parameters"
+            ) 
+    
+       
+        try:
+            
+            request = self.db.fetch_processor( processor_token )
+            
+            if request is None:
+                return self.format_process_failure(
+                    "access_exception",
+                    "Invalid access token"
+                )
+             
+            #obtain relevent info from the request object    
+            user = request[ "user_id" ]
+            query = request[ "query" ]
+            processor_id = request["access_token"]
+            resource_name = request["resource_name"]
+            #get the processor id here...
+            print "got here and resource name is %s" % resource_name
+            
+        except:
+            return self.format_process_failure(
+                "access_exception",
+                "Database problems are currently being experienced"
+            ) 
+
+        try:
+            print "am here and table is %s and query is %s" % (resource_name, query)
+            
+            myquery = "SELECT * FROM urls"
+            
+            myresources = [resource_name]
+            
+            tables = SqlParser.extract_tables(myquery)
+            
+            if set(tables).issubset(myresources):
+                result = self.resourcedb.executeQuery(resource_name, query)
+                return self.format_process_success(result )
+            else:
+                 return self.format_process_failure(
+                "processing_exception",
+                "you don't have access to the tables!"
+                )     
+   
+        except:
+           
+            return self.format_process_failure(
+                "processing_exception",
+                "Run-time failure"
+            )     
+   
+    
+    #///////////////////////////////////////////////
+     
+    def invoke_processor( self, processor_token, jsonParams):
         
         if processor_token is None :
             return self.format_process_failure(
@@ -160,12 +227,10 @@ class ProcessingModule( object ) :
                 "incorrectly formatted JSON parameters"
             ) 
     
-        print "am now here..."
-        
+       
         try:
             request = self.db.fetch_processor( processor_token )
             if request is None:
-                print "request is none!!"
                 return self.format_process_failure(
                     "access_exception",
                     "Invalid access token"
@@ -175,8 +240,10 @@ class ProcessingModule( object ) :
             user = request[ "user_id" ]
             query = request[ "query" ]
             processor_id = request["access_token"]
+            resource_name = request["resource_name"]
+            
             #get the processor id here...
-            print "hmmm seem to be here?"
+            
         except:
             return self.format_process_failure(
                 "access_exception",
@@ -225,7 +292,7 @@ class ProcessingModule( object ) :
         sandbox = module( "sandbox" )
         #sandbox.__dict__[ '__builtins__' ] = self.sandbox_builtins
         sandbox.db = self.db
-        sandbox.homedb = self.homedb
+        sandbox.resourcedb = self.resourcedb
         #setup constants available to the query
         sandbox.user = user
 
@@ -238,11 +305,14 @@ class ProcessingModule( object ) :
     #///////////////////////////////////////////////
     
         
-    def permit_processor( self, install_token, client_id, query, expiry_time ): 
+    def permit_processor( self, install_token, client_id, resource_name, query, expiry_time ): 
         
         #check that the shared_secret is correct for this user_id
         try:
+            
+            
             install = self.db.authenticate( install_token )
+            
 
             if ( not install ) or install[ "user_id" ] == None:
                 return self.format_register_failure(
@@ -262,14 +332,18 @@ class ProcessingModule( object ) :
                 "A valid client ID has not been provided"
             )  
         
+        # TODO now..
+        # check sql fields against resource schema
+        # check that the sql is syntactically correct
+        
         #check that the requested query is syntactically correct
-        try:
-            compile( query, '', 'exec' )
-        except Exception, e:
-            return self.format_register_failure(
-                "permit_failure",
-                "Compilation error: %s" % str( e )
-            ) 
+        #try:
+        #    compile( query, '', 'exec' )
+        #except Exception, e:
+        #    return self.format_register_failure(
+        #        "permit_failure",
+        #        "Compilation error: %s" % str( e )
+        #    ) 
             
         #TODO: check that the expiry time is valid
         #TODO: check that the resource_id is correct (i.e. us)
@@ -286,6 +360,7 @@ class ProcessingModule( object ) :
             self.db.insert_processor( 
                 access_token, 
                 client_id, 
+                resource_name,
                 install[ "user_id" ],
                 expiry_time, 
                 query 

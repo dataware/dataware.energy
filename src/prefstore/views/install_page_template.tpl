@@ -22,10 +22,10 @@
 
 	////////////////////////////////////////////////////
 
-	function install_resource() {
+	function install_resource(resource_name) {
 		$.ajax({
 			type: 'GET',
-			url: '/install_request?catalog_uri=' +  $("#catalog_uri").val() + '&resource_name=urls',
+			url: '/install_request?catalog_uri=' +  $("#catalog_uri").val() + '&resource_name=' + resource_name,
 			success: function( data, status  ) {
 
 				data = eval( '(' + data + ')' );
@@ -72,7 +72,7 @@
     <div class="row">
         <div class="span4 offset4 well">
             <legend> Choose a catalog </legend>
-            <form action="javascript:install_resource()">
+            <form action="javascript:install_resource('{{resource_name}}')">
                 <input type="hidden" name="submission" value="True" />
                 <select name="catalog_uri" class="span4" id="catalog_uri">
                     <option>http://datawarecatalog.appspot.com</option>

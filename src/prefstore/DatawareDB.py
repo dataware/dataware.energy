@@ -84,12 +84,13 @@ class DataDB(object):
                 CREATE TABLE %s.%s (
                     access_token varchar(256) NOT NULL,
                     client_id varchar(256) NOT NULL,
+                    resource_name varchar(256) NOT NULL,
                     user_id varchar(256) NOT NULL,
                     expiry_time int(11) unsigned NOT NULL,
                     query text NOT NULL,
                     checksum varchar(256) NOT NULL,
                     PRIMARY KEY (access_token),
-                    UNIQUE KEY (client_id,user_id,checksum)
+                    UNIQUE KEY (client_id,user_id,resource_name,checksum)
                 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
             """  % ( self.DB_NAME, self.TBL_DATAWARE_PROCESSORS ) ),
             
@@ -279,19 +280,20 @@ class DataDB(object):
         
     #////////////////////////////////////////////////////////////////////////////////////////////
     @safety_mysql   
-    def insert_processor( self, access_token, client_id, user_name, expiry_time, query_code ):
+    def insert_processor( self, access_token, client_id, resource_name, user_name, expiry_time, query_code ):
        
         #create a SHA checksum for the file
         checksum = hashlib.sha1( query_code ).hexdigest()
         
         query = """
-             INSERT INTO %s.%s VALUES ( %s, %s, %s, %s, %s, %s )
-        """  % ( self.DB_NAME, self.TBL_DATAWARE_PROCESSORS, '%s', '%s', '%s', '%s', '%s', '%s' ) 
+             INSERT INTO %s.%s VALUES ( %s, %s, %s, %s, %s, %s, %s )
+        """  % ( self.DB_NAME, self.TBL_DATAWARE_PROCESSORS, '%s', '%s', '%s', '%s', '%s', '%s', '%s' ) 
         
         self.cursor.execute( 
             query, ( 
                 access_token, 
                 client_id, 
+                resource_name,
                 user_name, 
                 expiry_time, 
                 query_code, 
@@ -429,22 +431,25 @@ class DataDB(object):
     
     
     @safety_mysql                    
-    def update_install( self, user_id, catalog_uri, install_token ):
-            
-        if ( user_id and catalog_uri and install_token ):
+    def update_install( self, user_id, catalog_uri, install_token, state ):
+        print "in updat einstall"
+        
+        if ( user_id and catalog_uri and install_token and state ):
             
             query = """
                   UPDATE %s.%s SET install_token=%s, registered=%s
-                  WHERE user_id=%s AND catalog_uri=%s
-              """  % ( self.DB_NAME, self.TBL_DATAWARE_INSTALLS, '%s', '%s', '%s', '%s' )
-           
+                  WHERE user_id=%s AND catalog_uri=%s AND state=%s
+              """  % ( self.DB_NAME, self.TBL_DATAWARE_INSTALLS, '%s', '%s', '%s', '%s', '%s')
+            
+            print "doing query"
+               
             update = self.cursor.execute( query, 
-                ( install_token, time(), user_id, catalog_uri, ) )
+                ( install_token, time(), user_id, catalog_uri, state, ) )
 
             if update > 0 :
                 log.debug( 
-                    "%s %s: Updating installation for user '%s' to catalog '%s'" 
-                    % ( self.name, "update_install", user_id, catalog_uri, ) 
+                    "%s %s: Updating installation for user '%s' to catalog '%s', state '%s'" 
+                    % ( self.name, "update_install", user_id, catalog_uri, state,) 
                 );
                 return True
             else:

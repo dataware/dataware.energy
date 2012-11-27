@@ -24,8 +24,8 @@
 	     
         
 		<ul class="nav nav-tabs" id="myTab">
-            <li class="active"><a href="#browsing">Browsing</a></li>
-            <li><a href="#energy">Energy</a></li>
+            <li class="active"><a href="#browsing" data-bind="click:function(){selectedResource('urls');}">Browsing</a></li>
+            <li><a href="#energy" data-bind="click:function(){selectedResource('energy')}">Energy</a></li>
         </ul>
         
             <div class="tab-content">
@@ -45,7 +45,10 @@
                     </div>
                 </div>
                 
-                <div class="tab-pane" id="energy">b</div>
+                <div class="tab-pane" id="energy">
+                    <legend> share </legend>
+                     <a  data-bind="attr:{href:install_url}">Share your data</a>
+                </div>
             </div>
         
             %if installs:
@@ -54,7 +57,7 @@
                     <a href="{{catalog}}">{{catalog}}</a>
                  %end
             %else:
-                <a href="install">Share your data</a>
+                <a  data-bind="attr:{href:install_url}">Share your data</a>
             %end
 	%end
 </div>
@@ -69,9 +72,17 @@
 
 <script>
         
-    function UrlModel(){
+    function ResourceModel(){
+        
         var self = this;
+        
+        this.selectedResource = ko.observable("urls");
+        
         this.selectedUrl = ko.observable();
+        
+        this.install_url = ko.computed(function(){
+            return "install?resource_name=" + self.selectedResource(); 
+        });
         
         this.requestText = ko.computed(function(){
             if (self.selectedUrl())
@@ -80,8 +91,8 @@
         });
     }
     
-    var urlModel = new UrlModel();
-    ko.applyBindings(urlModel);
+    var resourceModel = new ResourceModel();
+    ko.applyBindings(resourceModel);
 
 </script>
 

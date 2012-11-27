@@ -7,7 +7,7 @@ from bottle import *                #@UnusedWildImport
 from ProcessingModule import *      #@UnusedWildImport
 from InstallationModule import *    #@UnusedWildImport
 from DatawareDB import *            #@UnusedWildImport
-from HomeuserDB import *           #@UnusedWildImport
+from ResourceDB import *           #@UnusedWildImport
 from Worker import *
 import time                         #@Reimport
 import OpenIDManager
@@ -69,7 +69,11 @@ def format_failure( cause, error, ):
  
 @route( '/install', method = "GET", )
 def install():
-
+    
+    resource_name = request.GET.get( "resource_name", None )
+    
+    print "got resource name %s" % resource_name
+    
     try:
         user = check_login()
         if ( not user ): redirect( ROOT_PAGE )
@@ -80,7 +84,7 @@ def install():
     except Exception, e:
         return error( e )        
         
-    return template( 'install_page_template', user=user ) 
+    return template( 'install_page_template', user=user, resource_name=resource_name) 
     
 
 #///////////////////////////////////////////////
@@ -101,10 +105,6 @@ def install_request():
 
     catalog_uri = request.GET.get( "catalog_uri", None )
     resource_name = request.GET.get( "resource_name", None )
-    
-    print "getting resource: %s " % resource_name
-    print resources[resource_name]
-    print "%s" % resources[resource_name]['resource_uri']
     
     try: 
         url = im.initiate_install( user[ "user_id" ], catalog_uri, resource_name, resources[resource_name]['resource_uri'])
@@ -148,6 +148,7 @@ def install_complete():
         #complete the install, swapping the authorization code
         #we've received from the catalog, for the access_token
         try:
+            print "code is %s" % code 
             im.complete_install( user, state, code )
             
         except ParameterException, e:
@@ -159,7 +160,7 @@ def install_complete():
             return e.msg
         
         except Exception, e:
-            return error( e )
+            return  e
         
         #TODO: tell the user that the installation succeeded (a redirect?)
         redirect( "/" )
@@ -309,12 +310,14 @@ def permit_processor():
     try:
         install_token = request.forms.get( 'install_token' )
         client_id = request.forms.get( 'client_id' )
+        resource_name = request.forms.get( 'resource_name' )
         query = request.forms.get( 'query' ).replace( '\r\n','\n' )
         expiry_time = request.forms.get( 'expiry_time' )        
 
         result = pm.permit_processor( 
             install_token,
             client_id,
+            resource_name,
             query,
             expiry_time 
         )
@@ -525,7 +528,7 @@ def valid_name( str ):
 def query_url():
     try:
         return 0
-        #homedb.fetch_urls()
+        #resourcedb.fetch_urls()
     except Exception, e:
         return error( e )
 
@@ -702,7 +705,7 @@ def home( ):
         installs = datadb.fetch_catalog_installs(user['user_id'])
    
     
-    browsing = homedb.fetch_url_count()
+    browsing = resourcedb.fetch_url_count()
     urls=[]
     
     multiplier = 50 / float(browsing[0]['requests']);
@@ -764,9 +767,6 @@ if __name__ == '__main__' :
     
     configfile = sys.argv[1]
     
-  
-   
-    
     #-------------------------------
     # setup logging
     #-------------------------------
@@ -819,10 +819,6 @@ if __name__ == '__main__' :
     
     resources =  json.loads(Config.get("DatawareResources", "resources")) 
     
-    print resources
-    print resources['energy']
-    print resources['urls']
-    
     #-------------------------------
     # declare initialization in logs
     #-------------------------------        
@@ -839,16 +835,14 @@ if __name__ == '__main__' :
     #---------------------------------
     try:
        
-        homedb = HomeDB(configfile, "ResourceDB")
-        homedb.connect()
-        homedb.check_tables()
+        resourcedb = ResourceDB(configfile, "ResourceDB")
+        resourcedb.connect()
+        resourcedb.check_tables()
         
         datadb = DataDB(configfile, "DatawareDB" )
         datadb.connect()
         datadb.check_tables()
-        
-        log.info("created datadb!!");
-        
+    
         log.info( "database initialization completed... [SUCCESS]" );
         
     except Exception, e:
@@ -859,7 +853,7 @@ if __name__ == '__main__' :
     # module initialization
     #---------------------------------
     try:    
-        pm = ProcessingModule( datadb, homedb )
+        pm = ProcessingModule( datadb, resourcedb )
         im = InstallationModule( RESOURCE_NAME, RESOURCE_URI, datadb )
         pqueue = Queue.Queue()
         worker = Worker(pqueue, pm)

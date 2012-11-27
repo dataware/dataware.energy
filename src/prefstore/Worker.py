@@ -16,8 +16,9 @@ class Worker(threading.Thread):
             try:
                 request = self.work_queue.get()
                 print "processing request!!"
+                print request
                 
-                result = self.pm.invoke_processor( 
+                result = self.pm.invoke_processor_sql( 
                     request['access_token'], 
                     request['jsonParams']
                 )

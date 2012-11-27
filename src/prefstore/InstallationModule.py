@@ -98,21 +98,30 @@ class InstallationModule( object ) :
             raise ParameterException( 
                 "Catalog has not returned the correct parameters" )
         
+       
         #check to see if we have actually made the install request
         install = self.db.fetch_install_by_state( state ) 
+        
         
         if not ( install ):
             raise ParameterException( 
                 "Catalog has not returned a recognized state" )
         
+       
+        
         access_token = self._make_token_request( 
             install[ "catalog_uri"], 
             code )
-         
-        state = self.db.update_install( 
+        
+     
+        #need to have resourcename/code/state too else will update all?
+        
+        result = self.db.update_install( 
             install[ "user_id" ], 
             install[ "catalog_uri" ], 
-            access_token ) 
+            access_token,
+            state ) 
+        
         
         self.db.commit()
 
@@ -155,7 +164,8 @@ class InstallationModule( object ) :
             output = response.read()
             
             access_token = self._parse_access_results( output )
-
+            print "finished getting access_token %s" % access_token
+            
             return access_token
         
         except urllib2.URLError:
