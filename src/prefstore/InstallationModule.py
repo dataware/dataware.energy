@@ -217,14 +217,19 @@ class InstallationModule( object ) :
         
         #if so simply return the resource_id the catalog gave us...
         if catalog:
+            log.info("ALREADY REGISTERED SO RETURNING resource id %s", catalog[ "resource_id" ])
             return catalog[ "resource_id" ]
         
         #and if not register ourselves with the catalog, and get one...
         else:
+            log.info("NEW REGISTRATION, MAKING REGISTRATION REQUEST")
             catalog_response = self._make_registration_request( catalog_uri, resource_name, resource_uri )
+            log.info(catalog_response)
             resource_id = self._parse_registration_results( catalog_response )
+            log.info("INSERTING %s %s %s" % (catalog_uri, resource_id, resource_name))
             self.db.insert_catalog( catalog_uri, resource_id, resource_name )
             self.db.commit()
+            log.info("RETURNING %s" % resource_id)
             return resource_id
         
 

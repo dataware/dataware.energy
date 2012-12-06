@@ -138,9 +138,25 @@ class ProcessingModule( object ) :
             ) 
 
    
-   
-    def invoke_processor_sql(self, processor_token, jsonParams):
+    #run by a user to test output of a proposed query (submitted by a third-party client)
+        
+    def invoke_test_processor_sql(self, query):
+        
+        try:
+        
+            result = json.dumps(self.resourcedb.execute_query(query))        
             
+            return self.format_process_success(result)
+          
+        except:
+           
+            return self.format_process_failure(
+                "processing_exception",
+                "Run-time failure"
+            )     
+   
+    def invoke_processor_sql(self, processor_token, jsonParams, view_url):
+        
         if processor_token is None :
             
             return self.format_process_failure(
@@ -174,8 +190,6 @@ class ProcessingModule( object ) :
             query = request[ "query" ]
             processor_id = request["access_token"]
             resource_name = request["resource_name"]
-            #get the processor id here...
-            print "got here and resource name is %s" % resource_name
             
         except:
             return self.format_process_failure(
@@ -184,21 +198,29 @@ class ProcessingModule( object ) :
             ) 
 
         try:
-            print "am here and table is %s and query is %s" % (resource_name, query)
+            if self._check_constraints(resource_name, query):
             
-            myquery = "SELECT * FROM urls"
+                execution_time = time.time()
+                result = json.dumps(self.resourcedb.execute_query(query))
+                
+                try:
+                  
+                    self.db.insert_execution(processor_id=processor_id,
+                                             parameters=jsonParams, 
+                                             result=result, 
+                                             executed=execution_time,
+                                             view_url=view_url)
+
+                except:
+                    log.error("failed to store the execution details : processor_id %s parameters: %s " % 
+                              (processor_id, jsonParams))
+                
+                return self.format_process_success(result)
             
-            myresources = [resource_name]
-            
-            tables = SqlParser.extract_tables(myquery)
-            
-            if set(tables).issubset(myresources):
-                result = self.resourcedb.executeQuery(resource_name, query)
-                return self.format_process_success(result )
             else:
                  return self.format_process_failure(
-                "processing_exception",
-                "you don't have access to the tables!"
+                    "processing_exception",
+                    "your query violates constraints"
                 )     
    
         except:
@@ -336,6 +358,12 @@ class ProcessingModule( object ) :
         # check sql fields against resource schema
         # check that the sql is syntactically correct
         
+        if not self._check_constraints(resource_name, query):
+            return self.format_register_failure(
+                    "permit_failure",
+                    "your query violates constraints"
+            )
+             
         #check that the requested query is syntactically correct
         #try:
         #    compile( query, '', 'exec' )
@@ -353,7 +381,8 @@ class ProcessingModule( object ) :
        
         #so far so good. Time to generate an access token
        
-        access_token = self.generateAccessToken();
+        access_token = self.generateAccessToken()
+        
         log.info("generated access token %s" % access_token)
         
         try:
@@ -422,8 +451,16 @@ class ProcessingModule( object ) :
             
             
     #///////////////////////////////////////////////
-
-             
+    
+    # All this does at the moment is to check that the table being queried matches a resource
+    # that a user has shared with the catalog.
+    
+    def _check_constraints(self, resource_name, query):
+        myresources = [resource_name]            
+        tables = SqlParser.extract_tables(query)  
+        print tables
+        return set(tables).issubset(myresources)
+                   
     def generateAccessToken( self ):
         
         token = base64.b64encode(  

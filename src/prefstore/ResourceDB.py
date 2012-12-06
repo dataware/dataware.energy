@@ -177,23 +177,17 @@ class ResourceDB(object):
         
     #/////////////////////////////////////////////////////////////////////////////////////////////
     @safety_mysql
-    def executeQuery(self, table, fields):
-        print "in exec query"
-        
-        query = """
-            SELECT %s FROM %s.%s 
-        """  % (fields, self.DB_NAME, table) 
-        
-        print query
-	    
+    def execute_query(self, query):
+    
+        log.info("exec query: %s" % query)
         self.cursor.execute( query )
+        
         row = self.cursor.fetchall()
 
         if not row is None:
             return row
         else :
             return None    
-        
     
     
     @safety_mysql                
@@ -212,6 +206,18 @@ class ResourceDB(object):
         else :
             return None
 
+    @safety_mysql
+    def fetch_schema(self, table):
+        query = """
+                            SELECT column_name, data_type, is_nullable, character_maximum_length, numeric_precision 
+                            FROM information_schema.COLUMNS 
+                            WHERE table_name='%s' 
+                            AND table_schema = '%s'
+                            """ % (table, self.DB_NAME)
+        self.cursor.execute( query )                    
+        results = self.cursor.fetchall()
+        return results
+        
     #/////////////////////////////////////////////////////////////////////////////////////////////
     @safety_mysql                
     def fetch_url_count( self) :

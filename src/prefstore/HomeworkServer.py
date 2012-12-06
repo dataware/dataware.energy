@@ -66,7 +66,12 @@ def format_failure( cause, error, ):
 
 #///////////////////////////////////////////////
  
- 
+@route( '/schema', method = "GET", )
+def schema():
+    subdomain = request.urlparts.netloc.split('.')[0]
+    schema = resourcedb.fetch_schema(subdomain)
+    return json.dumps({"schema":schema})
+    
 @route( '/install', method = "GET", )
 def install():
     
@@ -181,7 +186,7 @@ def view_executions():
         return error( e ) 
    
     executions = datadb.fetch_executions()    
-    
+    log.info(executions)
     return template('executions_template',  user=user, executions=executions) 
     
 @route( '/test_query', method = ["GET", "POST"])
@@ -199,18 +204,19 @@ def test_query():
     
     if request.method=="GET":
         try:
-            jsonParams = request.GET['parameters']
+            #jsonParams = request.GET['parameters']
+            
             query = request.GET['query']
-            data = pm.test_processor(user, query, jsonParams)
+            
+            data = pm.invoke_test_processor_sql(query)
+        
             result = json.loads( 
                 data.replace( '\r\n','\n' ), 
                 strict=False 
             )
             
-            log.info(result)
-            
             if result['success']:
-                values = result['return']
+                values = json.loads(result['return'])
                 if isinstance(values, list):
                     if len(values) > 0:
                         if isinstance(values[0], dict):
@@ -219,7 +225,7 @@ def test_query():
             return data
             
         except Exception, e:
-            raise e
+            return data
     
     if request.method=="POST":
         try:
@@ -279,7 +285,15 @@ def invoke_processor():
         
         result_url = request.forms.get( 'result_url' )
         
-        pqueue.put({'access_token':access_token, 'jsonParams':jsonParams, 'result_url':result_url})
+        view_url = request.forms.get( 'view_url' )
+        #added to queue to handle asynchronously
+        log.info("PUTTING A VIEW URL ON QUEUE %s" % view_url)
+        
+        pqueue.put({'access_token':access_token, 
+                    'jsonParams':jsonParams, 
+                    'result_url':result_url,
+                    'view_url':view_url
+                    })
         
         return json.dumps({ 
             'success':True

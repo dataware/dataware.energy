@@ -1,13 +1,8 @@
+#code taken from: https://github.com/andialbrecht/sqlparse/blob/master/examples/extract_table_names.py
+
 import sqlparse
 from sqlparse.sql import IdentifierList, Identifier
 from sqlparse.tokens import Keyword, DML
-
-
-def tostring( fn ) :
-   
-    def wrapper( self, *args, **kwargs ) :
-        return 'hello'
-    return wrapper
     
 def is_subselect(parsed):
     if not parsed.is_group():
@@ -39,8 +34,8 @@ def extract_table_identifiers(token_stream):
             yield str(item.get_name())
         # It's a bug to check for Keyword here, but in the example
         # above some tables names are identified as keywords...
-        elif item.ttype is Keyword:
-            yield str(item.value)
+        #elif item.ttype is Keyword:
+        #    yield str(item.value)
 
 def extract_tables(sql):
     stream = extract_from_part(sqlparse.parse(sql)[0])

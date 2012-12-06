@@ -15,20 +15,24 @@ class Worker(threading.Thread):
         while True:
             try:
                 request = self.work_queue.get()
-                print "processing request!!"
+                print "REQUEST IS"
                 print request
                 
                 result = self.pm.invoke_processor_sql( 
                     request['access_token'], 
-                    request['jsonParams']
+                    request['jsonParams'],
+                    request['view_url']
                 )
                 
                 if not(result is None):
                     url = request['result_url']
-                    data = urllib.urlencode({'return':str(result)})
+                    data = urllib.urlencode(json.loads(result))
                     req = urllib2.Request(url,data)
-                    response = urllib2.urlopen(req)
-            
+                    print "sending %s" % json.loads(result)
+                    f = urllib2.urlopen(req)
+                    response = f.read()
+                    print response
+                    f.close()
             except Exception, e:   
                 print e
                     

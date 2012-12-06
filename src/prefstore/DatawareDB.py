@@ -86,7 +86,7 @@ class DataDB(object):
                     client_id varchar(256) NOT NULL,
                     resource_name varchar(256) NOT NULL,
                     user_id varchar(256) NOT NULL,
-                    expiry_time int(11) unsigned NOT NULL,
+                    expiry_time bigint(20) unsigned NOT NULL,
                     query text NOT NULL,
                     checksum varchar(256) NOT NULL,
                     PRIMARY KEY (access_token),
@@ -136,6 +136,7 @@ class DataDB(object):
                     parameters varchar(256) NOT NULL,
                     result text,
                     executed int(11) unsigned NOT NULL,
+                    client_view_url varchar(256),
                     PRIMARY KEY (execution_id),
                     FOREIGN KEY (processor_id) REFERENCES %s(access_token) 
                     ON DELETE CASCADE ON UPDATE CASCADE
@@ -248,14 +249,17 @@ class DataDB(object):
             );  
               
             self.cursor.execute( self.createQueries[ tableName ] )
-
-      
+                              
     #////////////////////////////////////////////////////////////////////////////////////////////
+    #///// this also needs the tpc token so can view results on clients site? //////////////////#
+   
+                                              
     @safety_mysql   
-    def insert_execution(self, processor_id, parameters, result, executed):
+    def insert_execution(self, processor_id, parameters, result, executed, view_url):
+       
         query = """
-             INSERT INTO %s.%s (processor_id, parameters, result, executed) VALUES ( %s, %s, %s, %s)
-        """  % ( self.DB_NAME, self.TBL_DATAWARE_EXECUTIONS, '%s', '%s', '%s', '%s') 
+             INSERT INTO %s.%s (processor_id, parameters, result, executed, client_view_url) VALUES ( %s, %s, %s, %s, %s)
+        """  % ( self.DB_NAME, self.TBL_DATAWARE_EXECUTIONS, '%s', '%s', '%s', '%s', '%s') 
         
         
         self.cursor.execute( 
@@ -263,7 +267,8 @@ class DataDB(object):
                 processor_id, 
                 parameters,
                 result,
-                executed
+                executed,
+                view_url
             ) 
         )
         self.commit()
@@ -302,11 +307,8 @@ class DataDB(object):
         )
         self.commit()
         
-        
-    
     #///////////////////////////////////////////////
-    
-    
+
     @safety_mysql       
     def delete_processor( self, user_id, access_token ):
 

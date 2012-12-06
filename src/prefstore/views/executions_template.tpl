@@ -3,7 +3,7 @@
 
 <h1> Executions performed </h1>
  % for execution in executions:
- <form action={{execution['view_url']}} method=post>
+ <form action={{execution['client_view_url']}} method=post>
      <input type="hidden" name="processor_id" value="{{execution['processor_id']}}">
      <div class="row">
         <div class="span2">
