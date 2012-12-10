@@ -16,6 +16,9 @@ import math
 import Queue
 import json
 
+from gevent import monkey; monkey.patch_all()
+from gevent.event import Event
+
 #//////////////////////////////////////////////////////////
 # SETUP LOGGING FOR THIS MODULE
 #//////////////////////////////////////////////////////////
@@ -27,7 +30,6 @@ log = logging.getLogger( "console_log" )
 
 data_log = logging.getLogger( "data_log" )
 
-
 class std_writer( object ):
     def __init__( self, msg ):
         self.msg = msg
@@ -37,8 +39,33 @@ class std_writer( object ):
                    .replace( '\t', '' )
         if len( data ) > 0 :
             log.error( self.msg + ": " + data )
+
+@route( '/triggertest', method="GET")
+def triggertest():
+    _trigger({"message":"test message %d" % len(messages)})
+    return json.dumps({"result":"success"})
+     
+def _trigger(message):
+    try:  
+        messages.append(message);    
+        event.set()
+        event.clear() 
+    except Exception, e:   
+        log.error("exception notifying") 
+        print e       
+    
+@route( '/stream', method = "GET", )
+def stream():
+
+    try:
+        event.wait()
+        message = messages[-1]
+        log.info("sending %s" % json.dumps(message))
+        yield json.dumps(message)
         
-        
+    except Exception, e:  
+        log.error("longpoll exception")
+
 #//////////////////////////////////////////////////////////
 # DATAWARE WEB-API CALLS
 #//////////////////////////////////////////////////////////
@@ -65,7 +92,9 @@ def format_failure( cause, error, ):
         
 
 #///////////////////////////////////////////////
- 
+  
+
+    
 @route( '/schema', method = "GET", )
 def schema():
     subdomain = request.urlparts.netloc.split('.')[0]
@@ -76,8 +105,6 @@ def schema():
 def install():
     
     resource_name = request.GET.get( "resource_name", None )
-    
-    print "got resource name %s" % resource_name
     
     try:
         user = check_login()
@@ -153,7 +180,6 @@ def install_complete():
         #complete the install, swapping the authorization code
         #we've received from the catalog, for the access_token
         try:
-            print "code is %s" % code 
             im.complete_install( user, state, code )
             
         except ParameterException, e:
@@ -186,7 +212,6 @@ def view_executions():
         return error( e ) 
    
     executions = datadb.fetch_executions()    
-    log.info(executions)
     return template('executions_template',  user=user, executions=executions) 
     
 @route( '/test_query', method = ["GET", "POST"])
@@ -287,7 +312,6 @@ def invoke_processor():
         
         view_url = request.forms.get( 'view_url' )
         #added to queue to handle asynchronously
-        log.info("PUTTING A VIEW URL ON QUEUE %s" % view_url)
         
         pqueue.put({'access_token':access_token, 
                     'jsonParams':jsonParams, 
@@ -298,12 +322,6 @@ def invoke_processor():
         return json.dumps({ 
             'success':True
         })
-        
-        #result = pm.invoke_processor( 
-        #    access_token, 
-        #    jsonParams,
-        #    result_url)
-        
        
     except Exception, e:
         raise e
@@ -596,11 +614,10 @@ def user_register():
         #if everything is okay so far, add the data to the database    
         if ( len( errors ) == 0 ):
             try:
-                log.info("inserting registration...");
+               
                 match = datadb.insert_registration( user_id, user_name, email) 
-                log.info("done inserting registration..., commiting");
                 datadb.commit()
-                log.info("committed");
+            
             except Exception, e:
                 return error( e )
 
@@ -847,6 +864,7 @@ if __name__ == '__main__' :
     #---------------------------------
     # Initialization
     #---------------------------------
+    
     try:
        
         resourcedb = ResourceDB(configfile, "ResourceDB")
@@ -869,10 +887,17 @@ if __name__ == '__main__' :
     try:    
         pm = ProcessingModule( datadb, resourcedb )
         im = InstallationModule( RESOURCE_NAME, RESOURCE_URI, datadb )
+        
+        #stuff for longpolling (live updates)
+        messages = []
+        event = Event()
+        
+        #stuff for processing queries asynchronously
         pqueue = Queue.Queue()
         worker = Worker(pqueue, pm)
         worker.daemon = True
         worker.start()
+        
         #pqueue.join()
         log.info( "module initialization completed... [SUCCESS]" );
     except Exception, e:
@@ -884,7 +909,10 @@ if __name__ == '__main__' :
     #---------------------------------
     try:
         debug( True )
-        run( host=HOST, port=PORT, quiet=BOTTLE_QUIET )
+        #from socketio.server import SocketIOServer 
+        #server = SocketIOServer((HOST, int(PORT)), app, namespace="socket.io", policy_server=False)
+        #server.serve_forever()
+        run( host=HOST, port=PORT, server='gevent')
     except Exception, e:  
         log.error( "Web Server Exception: %s" % ( e, ) )
         exit()

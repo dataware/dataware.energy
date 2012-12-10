@@ -1,28 +1,15 @@
 <!-- HEADER ------------------------------------------------------------------>
 %include header user=user
 
-<!---------------------------------------------------------------- 
-	PAGE SCRIPTS
------------------------------------------------------------------->
-<script type="text/javascript" src="./static/knockout/knockout-2.1.0.js"></script>
-
-<body>
-
-<!---------------------------------------------------------------- 
-	HEADER SECTION
------------------------------------------------------------------->
 
 <div class="container">
+
     <div class="well">
         <h1>Welcome to the resource manager.<small> Browse and manage your data resources </small></h1>
     </div>
 
-	<!---------------------------------------------------------------- 
-		SUMMARY SECTION
-	------------------------------------------------------------------>
 	%if user:
-	     
-        
+    <div class="mydata">       
 		<ul class="nav nav-tabs" id="myTab">
             <li class="active"><a href="#browsing" data-bind="click:function(){selectedResource('urls');}">Browsing</a></li>
             <li><a href="#energy" data-bind="click:function(){selectedResource('energy')}">Energy</a></li>
@@ -34,7 +21,7 @@
                         <div class="span8">
                             <div id="example" style="width: 550px; height: 350px;"></div>
                         </div>
-                        <div data-bind="if:selectedUrl()">
+                        <div data-bind="if:selectedUrl() ">
                             <div class="span4" id="details">
                                 <div class="well">
                                     <h4> <span data-bind="text:selectedUrl().url"></h4>
@@ -60,6 +47,7 @@
                 <a  data-bind="attr:{href:install_url}">Share your data</a>
             %end
 	%end
+	</div>
 </div>
 
 
@@ -70,31 +58,7 @@
     });
 </script>
 
-<script>
-        
-    function ResourceModel(){
-        
-        var self = this;
-        
-        this.selectedResource = ko.observable("urls");
-        
-        this.selectedUrl = ko.observable();
-        
-        this.install_url = ko.computed(function(){
-            return "install?resource_name=" + self.selectedResource(); 
-        });
-        
-        this.requestText = ko.computed(function(){
-            if (self.selectedUrl())
-                return self.selectedUrl().requests  + " requests";
-            return "";
-        });
-    }
-    
-    var resourceModel = new ResourceModel();
-    ko.applyBindings(resourceModel);
 
-</script>
 
 <script type="text/javascript">
 
@@ -102,7 +66,7 @@
       /*$('#details').hide();*/
      
       function wordclicked(url){
-        urlModel.selectedUrl(url);
+        //urlModel.selectedUrl(url);
         console.log(url);
         console.log(url.macaddrs);
        // $('#details').show().effect('bounce', {times: 4}, 300);
@@ -110,7 +74,6 @@
     
       $("#example").jQCloud({{!urls}});
 </script>
-
 
 <!-- FOOTER ------------------------------------------------------------------>
 %include footer
