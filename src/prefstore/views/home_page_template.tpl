@@ -1,6 +1,12 @@
 <!-- HEADER ------------------------------------------------------------------>
 %include header user=user
 
+<script>
+$(function(){
+    var rm = new ResourceModel();
+    ko.applyBindings(rm, $(".mydata")[0]);
+})
+</script>
 
 <div class="container">
 

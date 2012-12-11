@@ -275,10 +275,12 @@ class DataDB(object):
     
     @safety_mysql 
     def fetch_executions(self):
+    
         query = """
-             SELECT * FROM %s.%s
-        """  % ( self.DB_NAME, self.TBL_DATAWARE_EXECUTIONS) 
-        
+            SELECT e.*, p.query, p.resource_name FROM %s.%s e, %s.%s p WHERE 
+            p.access_token = e.processor_id;
+         """ %  (self.DB_NAME, self.TBL_DATAWARE_EXECUTIONS, self.DB_NAME, self.TBL_DATAWARE_PROCESSORS) 
+            
         self.cursor.execute( query )
         results = self.cursor.fetchall()
         return results

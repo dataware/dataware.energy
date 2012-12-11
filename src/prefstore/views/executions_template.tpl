@@ -1,24 +1,43 @@
 <!-- HEADER ------------------------------------------------------------------>
 %include header user=user
+<script>
+$(function(){
+    var em = new ExecutionModel();
+    em.loadData({{!executions}});
+    ko.applyBindings(em, $(".myexecutions")[0]);
+})
+</script>
 
-<h1> Executions performed </h1>
- % for execution in executions:
- <form action={{execution['client_view_url']}} method=post>
-     <input type="hidden" name="processor_id" value="{{execution['processor_id']}}">
-     <div class="row">
-        <div class="span2">
-            {{execution['processor_id']}}
+<div class="container">
+    <div class="myexecutions">
+        <div class="row">
+            <div class="span12">
+                <table class="table table-condensed table-striped table-bordered">
+                    <thead>
+                        <tr>
+                            <th>Query</th>
+                            <th>Resource</th>
+                            <th>Execution time</th>
+                            <th>View on client</th>
+                        </tr>   
+                    </thead>                
+                    <tbody data-bind='{ foreach: executions}'>
+                        <tr>
+                            <td data-bind="text:query"></td>
+                            <td width="150"><span data-bind="text:resource_name"></span></td>  
+                            <td width="150"><span data-bind="text:executed"></span></td>
+                            <td width="150">
+                                <form data-bind="attr:{action:client_view_url}" method=post>
+                                    <input type="hidden" name="processor_id" data-bind="value:processor_id">
+                                    <button class="btn btn-primary" type="submit">View!</button>
+                                </form>
+                            </td>   
+                        </tr>   
+                    </tbody>
+                </table> 
+            </div>
         </div>
-        <div class="span2">
-            {{execution['parameters']}}
-        </div>
-         <div class="span2">
-            {{execution['executed']}}
-        </div>
-        <div class="span2">
-            <button class="btn btn-primary" type="submit">View!</button>
-        </div>
-     </div>
- </form>
- %end
+    </div>
+</div>
+%include footer
  

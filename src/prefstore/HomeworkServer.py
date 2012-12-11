@@ -42,9 +42,35 @@ class std_writer( object ):
 
 @route( '/triggertest', method="GET")
 def triggertest():
-    _trigger({"message":"test message %d" % len(messages)})
-    return json.dumps({"result":"success"})
-     
+    user = check_login()
+    if user:
+        _trigger({  "type":"test",
+                    "user":user['user_id'], 
+                    "message":"test message %d" % len(messages)
+        })
+        return json.dumps({"result":"success"})
+    return json.dumps({"result":"error"})
+
+@route( '/executiontest', method="GET")
+def triggertest():
+    user = check_login()
+    executions = datadb.fetch_executions()    
+    execution = executions[0]
+    
+    if user:
+        _trigger({  "type":"execution",
+                    "user":user['user_id'], 
+                    "message":"test message %d" % len(messages),
+                    "data": json.dumps(executions[0])
+        
+                                         
+        })
+        #'result': executions[0]['result'],
+        #'parameters': executions[0]['parameters']
+                                       
+        return json.dumps({"result":"success"})
+    return json.dumps({"result":"error"})
+        
 def _trigger(message):
     try:  
         messages.append(message);    
@@ -56,12 +82,21 @@ def _trigger(message):
     
 @route( '/stream', method = "GET", )
 def stream():
-
+    
+    try:
+        user = check_login()
+        if ( not user ): 
+            yield json.dumps({"success":"false"})
+    except Exception, e:
+         yield json.dumps({"success":"false"})
+    print "ready to stream!"  
     try:
         event.wait()
         message = messages[-1]
-        log.info("sending %s" % json.dumps(message))
-        yield json.dumps(message)
+       
+        if (message['user'] and message['user'] == user['user_id']):
+            log.info("sending %s" % message['message'])
+            yield json.dumps(message)
         
     except Exception, e:  
         log.error("longpoll exception")
@@ -212,7 +247,7 @@ def view_executions():
         return error( e ) 
    
     executions = datadb.fetch_executions()    
-    return template('executions_template',  user=user, executions=executions) 
+    return template('executions_template',  user=user, executions=json.dumps(executions)) 
     
 @route( '/test_query', method = ["GET", "POST"])
 def test_query():

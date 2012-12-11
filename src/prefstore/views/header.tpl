@@ -7,6 +7,7 @@
 <script type="text/javascript" src="./static/jquery/jquery-1.8.2.min.js"></script>
 <script type="text/javascript" src="./static/jquery/jquery-ui-1.8.23.min.js"></script>
 <script type="text/javascript" src="./static/knockout/knockout-2.1.0.js"></script>
+<script type="text/javascript" src="./static/knockout/knockout-postbox.min.js"></script>
 <script type="text/javascript" src="./static/bootstrap/js/bootstrap.min.js"></script>
 <script type="text/javascript" src="./static/bootstrap/js/bootstrap-notify.js"></script>
 <script type="text/javascript" src="./static/jqcloud/jqcloud-1.0.1.min.js"></script> 
@@ -19,14 +20,22 @@
         var self = this;
         
         this.events = ko.observableArray([]);
-            
-        this.addEvent = function(event){
-            self.events.push(event);
-        };
         
+        this.lastEvent = ko.observable("").publishOn("myevents");
+         
+        /*
+         * subscribe to the events observable array and publish the last
+         * element, to be viewed by other view models.  Note that this currently
+         * sends a reference.  To create a deep copy we could do ko.toJSON and recreate
+         * at the other end.
+         */
         this.events.subscribe(function(newValue){
-            console.log(self.events());
-        });
+            console.log(this.events()[this.events().length -1]);
+            this.lastEvent(this.events()[this.events().length -1]);
+            
+            
+        },this);
+        
         
         this.read = function(message){
             self.events.remove(message);
@@ -46,8 +55,8 @@
                         frequency = 500;
                         console.log(data);
                         
-                        self.events.push(data.message);
-                        
+                        self.events.push(data);
+                        //self.latestEvent(data.message);
                         $('.top-right').notify({
                          message: { text: data.message }
                         }).show();
@@ -83,6 +92,10 @@
         
         this.selectedUrl = ko.observable("");
         
+        this.event = ko.observable().subscribeTo("myevents", true);
+        
+        this.event.subscribe(function(newValue){console.log("yes!!!!");console.log(self.event())});
+        
         this.install_url = ko.computed(function(){
             return "install?resource_name=" + self.selectedResource(); 
         });
@@ -94,7 +107,57 @@
         });
     } 
 </script>
- 
+
+<script>
+    function ExecutionModel(){
+       
+        
+        var self = this;
+         
+        this.executions = ko.observableArray([]);
+        
+        this.tsToString = function(ts){
+            function pad(n) { return n < 10 ? '0' + n : n }
+             
+            a = new Date(ts);
+            
+            months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+            
+            year = a.getFullYear();
+            month = months[a.getMonth()];
+            day = a.getDate();
+        
+            hour = pad(a.getUTCHours());
+            min = pad(a.getUTCMinutes());
+            sec = pad(a.getUTCSeconds());
+            return  day+' '+month+' '+year + "," + hour + ":" + min + ":" + sec;
+        }
+        
+        //filter out all execution events from the pool of all events.
+        this.loadData = function(data){
+            $.each(data, function(i, execution){
+                execution.result = $.parseJSON(execution.result);
+                execution.executed = self.tsToString( execution.executed * 1000);
+                self.executions.push(execution);
+            });    
+        };
+        
+        ko.postbox.subscribe("myevents", function(newValue) {
+            if (newValue.type == "execution"){
+                console.log(newValue.data);
+                execution = $.parseJSON(newValue.data);
+                //turn the result to an object too..
+                execution.result = $.parseJSON(execution.result);
+                execution.executed = self.tsToString( execution.executed * 1000);
+                console.log(execution);
+                this.executions.push(execution);
+            }
+        }, this);
+        
+        this.executions.subscribe(function(newValue){console.log(this.executions())},this);
+    }
+</script> 
+
 <script>
 
 	PREFSTORE = "http://hwresource.block49.net:9000/" 
@@ -105,10 +168,10 @@
 		});
 		
 		var nm = new NotificationModel();
-		var rm = new ResourceModel();
+		//var rm = new ResourceModel();
 		
 		ko.applyBindings(nm,$(".navbar-inner")[0]);
-        ko.applyBindings(rm, $(".mydata")[0]);
+        //ko.applyBindings(rm, $(".mydata")[0]);
         
         
         nm.startpolling();
@@ -123,8 +186,9 @@
         <a class="brand" href="#">My dataware resources</a>
         <ul class="nav">
             <li><a href="#" class="menu_button" id="home">home</a></li>
-            <li><a href="#" class="menu_button" id="install">share</a></li>
+            
             %if user:
+            <li><a href="#" class="menu_button" id="view_executions">executions</a></li>
             <li><a href="#" class="menu_button" id="logout">logout</a></li>
             %else:
             <li><a href="#" class="menu_button" id="login">login/register</a></li>
@@ -139,7 +203,7 @@
                 <ul class="dropdown-menu" role="menu" aria-labelledby="dLabel" data-bind="{foreach: events}">
                     <li> 
                         <a href="#" data-bind="click:function(){$parent.read($data);}"> 
-                        <span data-bind="text:$data"></span> 
+                        <span data-bind="text:message"></span> 
                         </a>
                     </li>
                 </ul>
