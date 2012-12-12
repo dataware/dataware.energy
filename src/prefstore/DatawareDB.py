@@ -272,7 +272,8 @@ class DataDB(object):
             ) 
         )
         self.commit()
-    
+        return self.cursor.lastrowid
+        
     @safety_mysql 
     def fetch_executions(self):
     
@@ -284,7 +285,19 @@ class DataDB(object):
         self.cursor.execute( query )
         results = self.cursor.fetchall()
         return results
+    
+    @safety_mysql 
+    def fetch_execution_by_id(self, id):
         
+        query = """
+            SELECT e.*, p.query, p.resource_name FROM %s.%s e, %s.%s p WHERE 
+            p.access_token = e.processor_id AND e.execution_id = %d;
+         """ %  (self.DB_NAME, self.TBL_DATAWARE_EXECUTIONS, self.DB_NAME, self.TBL_DATAWARE_PROCESSORS, id) 
+            
+        self.cursor.execute( query )
+        results = self.cursor.fetchone()
+        return results
+    
     #////////////////////////////////////////////////////////////////////////////////////////////
     @safety_mysql   
     def insert_processor( self, access_token, client_id, resource_name, user_name, expiry_time, query_code ):

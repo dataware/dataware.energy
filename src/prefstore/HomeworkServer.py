@@ -6,19 +6,23 @@ from __future__ import division
 from bottle import *                #@UnusedWildImport
 from ProcessingModule import *      #@UnusedWildImport
 from InstallationModule import *    #@UnusedWildImport
+from UpdateManager import *
 from DatawareDB import *            #@UnusedWildImport
 from ResourceDB import *           #@UnusedWildImport
-from Worker import *
+#from Worker import *
 import time                         #@Reimport
 import OpenIDManager
 import logging.handlers
 import math
-import Queue
 import json
+
+import urllib2
+import urllib
 
 from gevent import monkey; monkey.patch_all()
 from gevent.event import Event
-
+from gevent.queue import JoinableQueue
+import gevent
 #//////////////////////////////////////////////////////////
 # SETUP LOGGING FOR THIS MODULE
 #//////////////////////////////////////////////////////////
@@ -44,10 +48,11 @@ class std_writer( object ):
 def triggertest():
     user = check_login()
     if user:
-        _trigger({  "type":"test",
-                    "user":user['user_id'], 
-                    "message":"test message %d" % len(messages)
-        })
+        um.trigger({    
+                                    "type": "test",
+                                    "message": "a new execution has been undertaken!",
+                                    "data": json.dumps({"a":"thing"})                       
+                                })
         return json.dumps({"result":"success"})
     return json.dumps({"result":"error"})
 
@@ -58,9 +63,8 @@ def triggertest():
     execution = executions[0]
     
     if user:
-        _trigger({  "type":"execution",
-                    "user":user['user_id'], 
-                    "message":"test message %d" % len(messages),
+        um.trigger({  "type":"execution",
+                    "message":"test message %d" % um.queuelen(),
                     "data": json.dumps(executions[0])
         
                                          
@@ -71,32 +75,29 @@ def triggertest():
         return json.dumps({"result":"success"})
     return json.dumps({"result":"error"})
         
-def _trigger(message):
-    try:  
-        messages.append(message);    
-        event.set()
-        event.clear() 
-    except Exception, e:   
-        log.error("exception notifying") 
-        print e       
+  
     
 @route( '/stream', method = "GET", )
 def stream():
+    
     
     try:
         user = check_login()
         if ( not user ): 
             yield json.dumps({"success":"false"})
+            
     except Exception, e:
          yield json.dumps({"success":"false"})
-    print "ready to stream!"  
+         
     try:
-        event.wait()
-        message = messages[-1]
+        um.event.wait()
+        message = um.latest()
        
-        if (message['user'] and message['user'] == user['user_id']):
-            log.info("sending %s" % message['message'])
-            yield json.dumps(message)
+        #if (message['user'] and message['user'] == user['user_id']):
+        log.info("sending %s" % message['message'])
+        log.info(message)
+        jsonmsg = json.dumps(message)
+        yield jsonmsg
         
     except Exception, e:  
         log.error("longpoll exception")
@@ -346,6 +347,7 @@ def invoke_processor():
         result_url = request.forms.get( 'result_url' )
         
         view_url = request.forms.get( 'view_url' )
+        
         #added to queue to handle asynchronously
         
         pqueue.put({'access_token':access_token, 
@@ -354,9 +356,7 @@ def invoke_processor():
                     'view_url':view_url
                     })
         
-        return json.dumps({ 
-            'success':True
-        })
+        return json.dumps({"result":"success"})
        
     except Exception, e:
         raise e
@@ -818,7 +818,29 @@ def summary():
     return template( 'summary_page_template', user=user, summary=summary );
     
     
-
+def worker():
+    while True:
+        request = pqueue.get() 
+        try:            
+            
+            result = pm.invoke_processor_sql( 
+                request['access_token'], 
+                request['jsonParams'],
+                request['view_url']
+            )
+    
+            if not(result is None):
+                url = request['result_url']
+                data = urllib.urlencode(json.loads(result))
+                req = urllib2.Request(url,data)
+                f = urllib2.urlopen(req)
+                response = f.read()
+                f.close()
+        
+        except Exception, e:   
+            print "Exception!!"        
+        finally:
+            pqueue.task_done()
             
 #//////////////////////////////////////////////////////////
 # MAIN FUNCTION
@@ -920,20 +942,17 @@ if __name__ == '__main__' :
     # module initialization
     #---------------------------------
     try:    
-        pm = ProcessingModule( datadb, resourcedb )
+       
+        #the update manager maintains a queue of messages to be sent to connected clients.
+         
+        um = UpdateManager()
+        pm = ProcessingModule( datadb, resourcedb, um )
         im = InstallationModule( RESOURCE_NAME, RESOURCE_URI, datadb )
-        
-        #stuff for longpolling (live updates)
-        messages = []
-        event = Event()
-        
-        #stuff for processing queries asynchronously
-        pqueue = Queue.Queue()
-        worker = Worker(pqueue, pm)
-        worker.daemon = True
-        worker.start()
-        
-        #pqueue.join()
+       
+        pqueue = JoinableQueue()
+        gevent.spawn(worker)
+        pqueue.join()
+       
         log.info( "module initialization completed... [SUCCESS]" );
     except Exception, e:
         log.error( "module initialization error: %s" % ( e, ) )

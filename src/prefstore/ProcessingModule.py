@@ -39,11 +39,11 @@ class ProcessingModule( object ) :
     #///////////////////////////////////////////////
     
     
-    def __init__( self, datadb, resourcedb ):
+    def __init__( self, datadb, resourcedb, um):
         self.db = datadb;       
         self.resourcedb = resourcedb;
-        
         self.sandbox_builtins = __builtin__.__dict__.copy()
+        self.um = um;
         
         for command in __builtin__.__dict__ :
             if command not in self.ALLOWED_BUILTINS :
@@ -202,18 +202,34 @@ class ProcessingModule( object ) :
             
                 execution_time = time.time()
                 result = json.dumps(self.resourcedb.execute_query(query))
+               
                 
                 try:
                   
-                    self.db.insert_execution(processor_id=processor_id,
+                    execution_id = self.db.insert_execution(processor_id=processor_id,
                                              parameters=jsonParams, 
                                              result=result, 
                                              executed=execution_time,
                                              view_url=view_url)
-
+                                    
+                    execution = self.db.fetch_execution_by_id(execution_id)
+                                           
+                    self.um.trigger({    
+                                    "type": "execution",
+                                    "user":  user, 
+                                    "message": "a new execution has been undertaken!",
+                                    "data": json.dumps(execution)                       
+                                    })
+                            
                 except:
                     log.error("failed to store the execution details : processor_id %s parameters: %s " % 
                               (processor_id, jsonParams))
+                    
+                    return self.format_process_failure(
+                        "processing_exception",
+                        "failed to store the execution details :"
+                     )     
+                
                 
                 return self.format_process_success(result)
             

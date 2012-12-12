@@ -3,19 +3,21 @@ import urllib2
 import urllib
 import json
 
-class Worker(threading.Thread):
+class GreenWorker():
 
-    def __init__(self, work_queue, pm):
-        #super(self).__init__()
-        threading.Thread.__init__(self)
-        self.work_queue = work_queue
+    def __init__(self, pm):
+        self.queue = queue.Queue()
         self.pm = pm
-        
+    
+    def add(self, request):
+         self.queue.put_nowait(request)
+               
     def run(self):
         while True:
             try:
-                request = self.work_queue.get()
-              
+            
+                request = self.queue.get()
+                
                 result = self.pm.invoke_processor_sql( 
                     request['access_token'], 
                     request['jsonParams'],
