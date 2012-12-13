@@ -473,8 +473,18 @@ class ProcessingModule( object ) :
     
     def _check_constraints(self, resource_name, query):
         myresources = [resource_name]            
+        
         tables = SqlParser.extract_tables(query)  
+        
+        
+        print "tables is .."
         print tables
+        print "my resources is:"
+        print resources
+        
+        if tables is None
+            return False
+            
         return set(tables).issubset(myresources)
                    
     def generateAccessToken( self ):
