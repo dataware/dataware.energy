@@ -2,10 +2,13 @@
 %include header user=user
 <script>
 $(function(){
+   
     var em = new ExecutionModel();
-    em.loadData({{!executions}});
+    em.loadData({{!executions}}); //this needs to be an ajax call to ensure liveness.
     ko.applyBindings(em, $(".myexecutions")[0]);
-})
+});
+
+
 </script>
 
 <div class="container">

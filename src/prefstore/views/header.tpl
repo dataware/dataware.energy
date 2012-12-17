@@ -94,7 +94,6 @@
         
         this.event = ko.observable().subscribeTo("myevents", true);
         
-        this.event.subscribe(function(newValue){console.log("yes!!!!");console.log(self.event())});
         
         this.install_url = ko.computed(function(){
             return "install?resource_name=" + self.selectedResource(); 

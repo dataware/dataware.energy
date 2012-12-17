@@ -349,6 +349,7 @@ def invoke_processor():
         view_url = request.forms.get( 'view_url' )
         
         #added to queue to handle asynchronously
+        print "adding the request to the queue!"
         
         pqueue.put({'access_token':access_token, 
                     'jsonParams':jsonParams, 
@@ -356,9 +357,11 @@ def invoke_processor():
                     'view_url':view_url
                     })
         
+        print "returning success"
         return json.dumps({"result":"success"})
        
     except Exception, e:
+        print "EXCEPTION...."
         raise e
         return json.dumps({ 
             'success':False,        
@@ -822,7 +825,7 @@ def worker():
     while True:
         request = pqueue.get() 
         try:            
-            
+            print "got the new request, invoking."
             result = pm.invoke_processor_sql( 
                 request['access_token'], 
                 request['jsonParams'],

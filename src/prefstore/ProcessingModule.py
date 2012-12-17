@@ -156,6 +156,7 @@ class ProcessingModule( object ) :
             )     
    
     def invoke_processor_sql(self, processor_token, jsonParams, view_url):
+        print "invoking processor in pm"
         
         if processor_token is None :
             
@@ -178,6 +179,8 @@ class ProcessingModule( object ) :
         try:
             
             request = self.db.fetch_processor( processor_token )
+            print "got request"
+            print request
             
             if request is None:
                 return self.format_process_failure(
@@ -480,9 +483,9 @@ class ProcessingModule( object ) :
         print "tables is .."
         print tables
         print "my resources is:"
-        print resources
+        print myresources
         
-        if tables is None
+        if len(tables) == 0:
             return False
             
         return set(tables).issubset(myresources)
