@@ -15,6 +15,7 @@ import OpenIDManager
 import logging.handlers
 import math
 import json
+from functools import wraps
 
 import urllib2
 import urllib
