@@ -176,7 +176,7 @@ def install_request():
     resource_name = request.GET.get( "resource_name", None )
     
     try: 
-        url = im.initiate_install( user[ "user_id" ], catalog_uri, resource_name, resources[resource_name]['resource_uri'])
+        url = im.initiate_install( user[ "user_id" ], catalog_uri, resource_name, RESOURCES[resource_name]['resource_uri'])
         return format_success( url )
     except ParameterException, e:
         return format_failure( "resource", e.msg )
@@ -656,7 +656,12 @@ def user_register():
                
                 match = datadb.insert_registration( user_id, user_name, email) 
                 datadb.commit()
-            
+                
+                #also insert the list of this user's resources (provided in the config file..)
+                for key in RESOURCES:
+                    datadb.insert_resource( user_id, key) 
+                datadb.commit()
+                 
             except Exception, e:
                 return error( e )
 
@@ -758,37 +763,56 @@ def liveupdate( ):
     
 @route( '/', method = "GET" )     
 @route( '/home', method = "GET" )
-def home( ):     
+def home( ):  
+   
     try:
         user = check_login()
     except RegisterException, e:
         redirect( "/register" ) 
     except LoginException, e:
         return error( e.msg )
-  
-    installs = None
+      
+    if user is None:
+        redirect( "/login" ) 
     
-    if ( not user ):
-        summary = None
-    else: 
-        summary = None #datadb.fetch_user_summary( user[ "user_id" ] )
-        installs = datadb.fetch_catalog_installs(user['user_id'])
-   
+    installs = datadb.fetch_catalog_installs(user['user_id'])
     
-    browsing = resourcedb.fetch_url_count()
+    browsing = resourcedb.fetch_url_count()    
+    
     urls=[]
+
+    if browsing:
     
-    multiplier = 50 / float(browsing[0]['requests']);
+        multiplier = 50 / float(browsing[0]['requests']);
      
-    for row in browsing:
+        for row in browsing:
         
-        link = "javascript:wordclicked({'url': '%s', 'macaddrs':'%s', 'ipdaddrs':'%s' , 'requests' :%d})" % (row['url'],row['macaddrs'],row['ipaddrs'],row['requests'])
+            link = "javascript:wordclicked({'url': '%s', 'macaddrs':'%s', 'ipdaddrs':'%s' , 'requests' :%d})" % (row['url'],row['macaddrs'],row['ipaddrs'],row['requests'])
         
-        urls.append({'text': row['url'], 'weight':int(float(row['requests']) * multiplier), 'link': link, 'html': {'title': "url browsed"}})
-     
-    return template( 'home_page_template', user=user, summary=summary, urls=urls, installs=installs);
-    
-    
+            urls.append({'text': row['url'], 
+                        'weight':int(float(row['requests']) * multiplier),
+                        'link': link,
+                        'html': {'title': "url browsed"}
+                        })
+ 
+    return template( 'home_page_template', user=user, urls=urls, installs=installs);
+ 
+ 
+#return a list of all resources (id, name, installed) for this user 
+@route('/resources')
+def resources():   
+    try:
+        user = check_login()
+    except RegisterException, e:
+        redirect( "/register" ) 
+    except LoginException, e:
+        return error( e.msg )
+      
+    if user is None:
+        redirect( "/login" ) 
+
+    return json.dumps(datadb.fetch_user_resources(user['user_id']))
+   
 #///////////////////////////////////////////////  
     
 @route('/purge')
@@ -826,7 +850,7 @@ def worker():
     while True:
         request = pqueue.get() 
         try:            
-            print "got the new request, invoking."
+           
             result = pm.invoke_processor_sql( 
                 request['access_token'], 
                 request['jsonParams'],
@@ -904,12 +928,13 @@ if __name__ == '__main__' :
     HOST = "0.0.0.0"  
     BOTTLE_QUIET = True 
     ROOT_PAGE = "/"
-    RESOURCE_NAME = Config.get("DatawareResource", "resource_name")
-    RESOURCE_URI = Config.get("DatawareResource", "resource_uri")    #REALM = "http://www.prefstore.org"
-    REALM =  Config.get("DatawareResource", "realm")    #WEB_PROXY = "http://mainproxy.nottingham.ac.uk:8080"
+    RESOURCE_NAME   = Config.get("DatawareResource", "resource_name")
+    RESOURCES       = json.loads(Config.get("DatawareResources", "resources"))
+    RESOURCE_URI    = Config.get("DatawareResource", "resource_uri")    #REALM = "http://www.prefstore.org"
+    REALM           = Config.get("DatawareResource", "realm")    #WEB_PROXY = "http://mainproxy.nottingham.ac.uk:8080"
     
     
-    resources =  json.loads(Config.get("DatawareResources", "resources")) 
+    #resources =  json.loads(Config.get("DatawareResources", "resources")) 
     
     #-------------------------------
     # declare initialization in logs

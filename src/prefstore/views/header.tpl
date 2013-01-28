@@ -30,10 +30,7 @@
          * at the other end.
          */
         this.events.subscribe(function(newValue){
-            console.log(this.events()[this.events().length -1]);
             this.lastEvent(this.events()[this.events().length -1]);
-            
-            
         },this);
         
         
@@ -53,12 +50,11 @@
                     
                     success: function(data) {
                         frequency = 500;
-                        console.log(data);
-                        
+                       
                         self.events.push(data);
-                        //self.latestEvent(data.message);
+                       
                         $('.top-right').notify({
-                         message: { text: data.message }
+                            message: { text: data.message }
                         }).show();
                     },
                      
@@ -82,6 +78,8 @@
         }
     }
 </script>
+
+
 <script>
 
  function ResourceModel(){
@@ -92,8 +90,14 @@
         
         this.selectedUrl = ko.observable("");
         
+        this.installs = ko.observableArray([]);
+        
         this.event = ko.observable().subscribeTo("myevents", true);
         
+        this.loadInstalls = function(data){
+           self.installs(data);
+           console.log(self.installs());
+        };
         
         this.install_url = ko.computed(function(){
             return "install?resource_name=" + self.selectedResource(); 
@@ -143,17 +147,14 @@
         
         ko.postbox.subscribe("myevents", function(newValue) {
             if (newValue.type == "execution"){
-                console.log(newValue.data);
                 execution = $.parseJSON(newValue.data);
                 //turn the result to an object too..
                 execution.result = $.parseJSON(execution.result);
                 execution.executed = self.tsToString( execution.executed * 1000);
-                console.log(execution);
                 this.executions.push(execution);
             }
         }, this);
         
-        this.executions.subscribe(function(newValue){console.log(this.executions())},this);
     }
 </script> 
 
@@ -165,14 +166,8 @@
 		$( 'a.menu_button' ).click( function() {
 			self.parent.location=  $( this ).attr('id');
 		});
-		
 		var nm = new NotificationModel();
-		//var rm = new ResourceModel();
-		
-		ko.applyBindings(nm,$(".navbar-inner")[0]);
-        //ko.applyBindings(rm, $(".mydata")[0]);
-        
-        
+		ko.applyBindings(nm,$(".navbar-inner")[0]);  
         nm.startpolling();
 	});
 </script>

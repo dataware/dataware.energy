@@ -70,6 +70,7 @@ class DataDB(object):
     
         self.TBL_DATAWARE_PROCESSORS = 'tblDatawareProcessors'
         self.TBL_DATAWARE_CATALOGS = 'tblDatawareCatalogs'
+        self.TBL_DATAWARE_RESOURCES = 'tblDatawareResources'
         self.TBL_DATAWARE_INSTALLS = 'tblDatawareInstalls'
         self.TBL_DATAWARE_EXECUTIONS = 'tblDatawareExecutions'
         self.TBL_USER_DETAILS = 'tblUserDetails'
@@ -128,7 +129,15 @@ class DataDB(object):
                     ON DELETE CASCADE ON UPDATE CASCADE
                 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
             """  % ( self.DB_NAME, self.TBL_DATAWARE_INSTALLS, self.TBL_DATAWARE_CATALOGS ) ),   
-             
+            
+            ( self.TBL_DATAWARE_RESOURCES, """ 
+                CREATE TABLE %s.%s (
+                    user_id varchar(256) NOT NULL, 
+                    resource_name varchar(256) NOT NULL,             
+                    PRIMARY KEY (user_id, resource_name)
+                ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+            """  % ( self.DB_NAME, self.TBL_DATAWARE_RESOURCES ) ),   
+              
             ( self.TBL_DATAWARE_EXECUTIONS, """ 
                 CREATE TABLE %s.%s (
                     execution_id int(11) AUTO_INCREMENT,
@@ -408,10 +417,21 @@ class DataDB(object):
         else :
             return None   
             
-        
                 
     #///////////////////////////////////////
     
+    @safety_mysql                    
+    def insert_resource( self, user_id, resource_name):
+         if ( user_id and resource_name):
+            query = """
+                  INSERT INTO %s.%s 
+                  ( user_id,  resource_name ) 
+                  VALUES ( %s, %s )
+            """  % ( self.DB_NAME, self.TBL_DATAWARE_RESOURCES, '%s', '%s')
+            
+            self.cursor.execute( query, 
+                ( user_id, resource_name) )
+                
     
     @safety_mysql                    
     def insert_install( self, user_id, catalog_uri, resource_name ):
@@ -555,22 +575,34 @@ class DataDB(object):
         else :
             return None   
     
-    #///////////////////////////////////////////////
     
+    def fetch_user_resources(self, user_id):
+        if user_id:
+            query = """
+                SELECT r.user_id, r.resource_name, i.install_token IS NOT NULL as installed FROM %s.%s r LEFT JOIN %s.%s i ON i.user_id = r.user_id WHERE r.user_id = %s
+            """  % ( self.DB_NAME, self.TBL_DATAWARE_RESOURCES, self.DB_NAME, self.TBL_DATAWARE_INSTALLS,'%s') 
+            
+            print query
+            self.cursor.execute( query, ( user_id ) ) 
+            
+            return self.cursor.fetchall()
+    
+    
+    #///////////////////////////////////////////////
+       
     @safety_mysql                    
     def fetch_catalog_installs(self, user_id):
         if user_id:   
             query = """
-                SELECT * FROM %s.%s t WHERE user_id = %s
+                SELECT * FROM %s.%s t WHERE user_id = %s AND install_token IS NOT NULL
             """  % ( self.DB_NAME, self.TBL_DATAWARE_INSTALLS, '%s') 
         
             self.cursor.execute( query, ( user_id ) )
             rows = self.cursor.fetchall()
             if rows:
-                return [dict['catalog_uri'] for dict in rows] 
-            
-        else :
-            return None
+                return [ {"catalog":dict['catalog_uri'], "resource":dict['resource_name'] } for dict in rows] 
+    
+        return []
             
             
     #///////////////////////////////////////////////
