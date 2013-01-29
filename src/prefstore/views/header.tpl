@@ -11,7 +11,6 @@
 <script type="text/javascript" src="./static/knockout/knockout-mapping.js"></script>
 <script type="text/javascript" src="./static/bootstrap/js/bootstrap.min.js"></script>
 <script type="text/javascript" src="./static/bootstrap/js/bootstrap-notify.js"></script>
-<script type="text/javascript" src="./static/jqcloud/jqcloud-1.0.1.min.js"></script> 
 <script type="text/javascript" src="http://www.google.com/jsapi"></script>
 
 
@@ -107,6 +106,20 @@
             console.log(self.resources());
         };
         
+        this.selectedResource.subscribe(function(resource){
+            console.log(resource.resource_name());
+            
+            $.ajax({
+                    url: "/static/dynamic_views/" + resource.resource_name() + ".html",
+                    dataType: 'html', 
+                
+                    success: function(data) {
+                       console.log(data);
+                        $(".myview").empty();
+                        $(".myview").append(data);
+                    }
+            });
+        },this);
         
         /*this.requestText = ko.computed(function(){
             if (self.selectedUrl())

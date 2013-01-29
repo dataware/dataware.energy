@@ -777,9 +777,29 @@ def home( ):
     
     installs = datadb.fetch_catalog_installs(user['user_id'])
     
-    browsing = resourcedb.fetch_url_count()    
+   
+    resources = datadb.fetch_user_resources(user['user_id'])
     
+    return template( 'home_page_template', user=user, resources=json.dumps(resources), installs=installs);
+ 
+
+@route('/urls')
+def urls():
+    
+    try:
+        user = check_login()
+    except RegisterException, e:
+        redirect( "/register" ) 
+    except LoginException, e:
+        return error( e.msg )
+      
+    if user is None:
+        redirect( "/login" ) 
+        
+
     urls=[]
+    
+    browsing = resourcedb.fetch_url_count()    
 
     if browsing:
     
@@ -794,12 +814,9 @@ def home( ):
                         'link': link,
                         'html': {'title': "url browsed"}
                         })
+                        
+    return json.dumps(urls)
     
-    resources = datadb.fetch_user_resources(user['user_id'])
-    
-    return template( 'home_page_template', user=user, urls=urls, resources=json.dumps(resources), installs=installs);
- 
- 
 #return a list of all resources (id, name, installed) for this user 
 @route('/resources')
 def resources():   
