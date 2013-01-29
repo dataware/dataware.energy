@@ -579,7 +579,7 @@ class DataDB(object):
     def fetch_user_resources(self, user_id):
         if user_id:
             query = """
-                SELECT r.user_id, r.resource_name, i.install_token IS NOT NULL as installed FROM %s.%s r LEFT JOIN %s.%s i ON i.user_id = r.user_id WHERE r.user_id = %s
+                SELECT r.user_id, r.resource_name, i.install_token IS NOT NULL as installed, i.catalog_uri FROM %s.%s r LEFT JOIN %s.%s i ON i.user_id = r.user_id AND i.resource_name = r.resource_name WHERE r.user_id = %s
             """  % ( self.DB_NAME, self.TBL_DATAWARE_RESOURCES, self.DB_NAME, self.TBL_DATAWARE_INSTALLS,'%s') 
             
             print query
@@ -762,6 +762,7 @@ class DataDB(object):
             self.cursor.execute("DELETE FROM %s.%s" % ( self.DB_NAME, self.TBL_DATAWARE_PROCESSORS))
             self.cursor.execute("DELETE FROM %s.%s" % ( self.DB_NAME, self.TBL_DATAWARE_CATALOGS))
             self.cursor.execute("DELETE FROM %s.%s" % ( self.DB_NAME, self.TBL_DATAWARE_INSTALLS))
+            self.cursor.execute("DELETE FROM %s.%s" % ( self.DB_NAME, self.TBL_DATAWARE_RESOURCES))
             self.commit()
         except Exception, e:
             print e

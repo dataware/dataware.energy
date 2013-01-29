@@ -37,6 +37,19 @@ def extract_table_identifiers(token_stream):
         #elif item.ttype is Keyword:
         #    yield str(item.value)
 
+def extract_all_keywords(token_stream):
+    for item in token_stream:
+        if item.ttype is Keyword:
+            yield str(item.value.upper())
+        elif item.ttype is DML:
+            yield str(item.value.upper())
+            
+def extract_keywords(sql):
+    x = sqlparse.parse(sql)[0]
+    print x.tokens
+    #stream = sqlparse.parse(sql)[0]
+    return list(extract_all_keywords(x.tokens))
+    
 def extract_tables(sql):
     stream = extract_from_part(sqlparse.parse(sql)[0])
     return list(extract_table_identifiers(stream))

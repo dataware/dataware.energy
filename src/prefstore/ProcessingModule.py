@@ -18,7 +18,7 @@ import SqlParser
 #setup logger for this module
 log = logging.getLogger( "console_log" )
 
-    
+
 #///////////////////////////////////////////////
 
 
@@ -34,6 +34,10 @@ class ProcessingModule( object ) :
         'max', 'min', 'oct', 'ord', 'pow', 'range', 'reduce', 'repr',
         'round', 'slice', 'str', 'sum', 'tuple', 'type', 'unichr',
         'unicode', 'xrange', 'zip'
+    ]
+    
+    ALLOWED_KEYWORDS = [
+        'SELECT', 'FROM', 'WHERE', 'LIMIT', 'JOIN', 'LEFT', 'INNER', 'GROUP', 'ORDER', 'BY', 'DISTINCT', 'AND', 'OR', 'ON', 'NOT', 'LIKE', 'COUNT', 'SUM', 'ASC', 'DESC', 'HAVING', 'IF', 'IN'
     ]
     
     #///////////////////////////////////////////////
@@ -477,18 +481,30 @@ class ProcessingModule( object ) :
     def _check_constraints(self, resource_name, query):
         myresources = [resource_name]            
         
-        tables = SqlParser.extract_tables(query)  
+        tables      = SqlParser.extract_tables(query)  
+        keywords    = SqlParser.extract_keywords(query)
         
-        
-        print "tables is .."
+        print "keywords are "
+        print keywords
+         
+        print "tables are .."
         print tables
+        
         print "my resources is:"
         print myresources
         
         if len(tables) == 0:
             return False
-            
-        return set(tables).issubset(myresources)
+      
+        valid = set(tables).issubset(myresources)
+        
+        print "table constraints met: %r" % valid
+        
+        valid = set(keywords).issubset(self.ALLOWED_KEYWORDS)
+        
+        print "keyword and table constraints met: %r" % valid
+        
+        return valid
                    
     def generateAccessToken( self ):
         

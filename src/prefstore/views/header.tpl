@@ -99,10 +99,13 @@
                 resource.install_url = ko.computed(function(){  
                     return "install?resource_name=" + resource.resource_name(); 
                 });
+                console.log("adding resource..." + resource.resource_name());
+                
                 self.resources.push(resource);
             });
            
             self.selectedResource(self.resources()[0]);
+            console.log("resources are..");
             console.log(self.resources());
         };
         
@@ -114,7 +117,6 @@
                     dataType: 'html', 
                 
                     success: function(data) {
-                       console.log(data);
                         $(".myview").empty();
                         $(".myview").append(data);
                     }

@@ -780,6 +780,8 @@ def home( ):
    
     resources = datadb.fetch_user_resources(user['user_id'])
     
+    print json.dumps(resources)
+    
     return template( 'home_page_template', user=user, resources=json.dumps(resources), installs=installs);
  
 
