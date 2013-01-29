@@ -8,6 +8,7 @@
 <script type="text/javascript" src="./static/jquery/jquery-ui-1.8.23.min.js"></script>
 <script type="text/javascript" src="./static/knockout/knockout-2.1.0.js"></script>
 <script type="text/javascript" src="./static/knockout/knockout-postbox.min.js"></script>
+<script type="text/javascript" src="./static/knockout/knockout-mapping.js"></script>
 <script type="text/javascript" src="./static/bootstrap/js/bootstrap.min.js"></script>
 <script type="text/javascript" src="./static/bootstrap/js/bootstrap-notify.js"></script>
 <script type="text/javascript" src="./static/jqcloud/jqcloud-1.0.1.min.js"></script> 
@@ -86,28 +87,32 @@
         
         var self = this;
         
-        this.selectedResource = ko.observable("urls");
+        this.selectedResource = ko.observable("");
         
-        this.selectedUrl = ko.observable("");
-        
-        this.installs = ko.observableArray([]);
+        this.resources = ko.observableArray([]);
         
         this.event = ko.observable().subscribeTo("myevents", true);
         
-        this.loadInstalls = function(data){
-           self.installs(data);
-           console.log(self.installs());
+        this.loadResources = function(data){
+            
+            $.each(data, function(i, item){
+                resource = ko.mapping.fromJS(item);
+                resource.install_url = ko.computed(function(){  
+                    return "install?resource_name=" + resource.resource_name(); 
+                });
+                self.resources.push(resource);
+            });
+           
+            self.selectedResource(self.resources()[0]);
+            console.log(self.resources());
         };
         
-        this.install_url = ko.computed(function(){
-            return "install?resource_name=" + self.selectedResource(); 
-        });
         
-        this.requestText = ko.computed(function(){
+        /*this.requestText = ko.computed(function(){
             if (self.selectedUrl())
                 return self.selectedUrl().requests  + " requests";
             return "";
-        });
+        });*/
     } 
 </script>
 

@@ -4,7 +4,7 @@
 <script>
 $(function(){
     var rm = new ResourceModel();
-    rm.loadInstalls({{!installs}});
+    rm.loadResources({{!resources}});
     ko.applyBindings(rm, $(".mydata")[0]);
 })
 </script>
@@ -14,50 +14,35 @@ $(function(){
     <div class="well">
         <h1>Welcome to the resource manager.<small> Browse and manage your data resources </small></h1>
     </div>
-
-	%if user:
+    
+    %if user:
     <div class="mydata">       
-		<ul class="nav nav-tabs" id="myTab">
-            <li class="active">
-                <a href="#browsing" data-bind="click:function(){selectedResource('urls');}">Browsing</a>
-            </li>
-            <li>
-                <a href="#energy" data-bind="click:function(){selectedResource('energy')}">Energy</a>
+		<ul class="nav nav-pills" id="myTab" data-bind="foreach:resources">
+            <li data-bind="css:{active: $parent.selectedResource().resource_name() == resource_name()}">
+                <a data-bind="attr:{href: '#' + resource_name()}, click:function(){$parent.selectedResource($data);}, text:resource_name"></a>
             </li>
         </ul>
-        <div class="tab-content">
-            <div class="tab-pane active" id="browsing">
-                <div class="row">
-                    <div class="span8">
-                        <div id="example" style="width: 550px; height: 350px;"></div>
-                    </div>
-                    <div data-bind="if:selectedUrl() ">
-                        <div class="span4" id="details">
-                            <div class="well">
-                                <h4> <span data-bind="text:selectedUrl().url"></h4>
-                                <h4><small><span data-bind="text:requestText()"></small></h4>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="tab-pane" id="energy">
-                <legend> share </legend>
-                 <a  data-bind="attr:{href:install_url}">Share your data</a>
-            </div>
-        </div>
+        <div class="row">
+            <div class="span10">
+                <h3 data-bind="text:selectedResource().resource_name()"></h3>
         
-        %if installs:
-            You are sharing this data with     
-             %for catalog in installs:
-                <a href="{{catalog}}">{{catalog}}</a>
-             %end
-        %else:
-            <a  data-bind="attr:{href:install_url}">Share your data</a>
-        %end
+                <p> Some sort of view of user <span data-bind="text:selectedResource().resource_name()"></span> data</p>
+               
+                <!-- pull in view of the data dynamically here -->
+                
+                <div data-bind="if: selectedResource().installed() == 0">
+                    <a  data-bind="attr:{href:selectedResource().install_url}">Share your data</a>
+                </div>
+            
+                <div data-bind="if: selectedResource().installed() == 1">
+                    %for catalog in installs:
+                        <a href="{{catalog}}">{{catalog}}</a>
+                    %end  
+                </div>
+             </div>
+        </div>
+    </div>
 	%end
-	</div>
 </div>
 
 
@@ -68,7 +53,7 @@ $(function(){
     });
 </script>
 
-<script type="text/javascript">
+<!--<script type="text/javascript">
 
       /*$('#details').hide();*/
      
@@ -80,7 +65,6 @@ $(function(){
       }
     
       $("#example").jQCloud({{!urls}});
-</script>
-
+</script>-->
 <!-- FOOTER ------------------------------------------------------------------>
 %include footer

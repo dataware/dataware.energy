@@ -794,8 +794,10 @@ def home( ):
                         'link': link,
                         'html': {'title': "url browsed"}
                         })
- 
-    return template( 'home_page_template', user=user, urls=urls, installs=installs);
+    
+    resources = datadb.fetch_user_resources(user['user_id'])
+    
+    return template( 'home_page_template', user=user, urls=urls, resources=json.dumps(resources), installs=installs);
  
  
 #return a list of all resources (id, name, installed) for this user 
