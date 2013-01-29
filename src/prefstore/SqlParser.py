@@ -45,10 +45,8 @@ def extract_all_keywords(token_stream):
             yield str(item.value.upper())
             
 def extract_keywords(sql):
-    x = sqlparse.parse(sql)[0]
-    print x.tokens
-    #stream = sqlparse.parse(sql)[0]
-    return list(extract_all_keywords(x.tokens))
+    toks = sqlparse.parse(sql)[0]
+    return list(extract_all_keywords(toks.tokens))
     
 def extract_tables(sql):
     stream = extract_from_part(sqlparse.parse(sql)[0])

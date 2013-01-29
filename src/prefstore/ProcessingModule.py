@@ -147,20 +147,22 @@ class ProcessingModule( object ) :
     def invoke_test_processor_sql(self, query):
         
         try:
-        
-            result = json.dumps(self.resourcedb.execute_query(query))        
+            
+            result = self.resourcedb.execute_query(query)
+            
+            
+            
+            result = json.dumps(result)        
             
             return self.format_process_success(result)
           
         except:
-           
             return self.format_process_failure(
                 "processing_exception",
                 "Run-time failure"
             )     
    
     def invoke_processor_sql(self, processor_token, jsonParams, view_url):
-        print "invoking processor in pm"
         
         if processor_token is None :
             
@@ -183,8 +185,6 @@ class ProcessingModule( object ) :
         try:
             
             request = self.db.fetch_processor( processor_token )
-            print "got request"
-            print request
             
             if request is None:
                 return self.format_process_failure(
@@ -205,6 +205,7 @@ class ProcessingModule( object ) :
             ) 
 
         try:
+            
             if self._check_constraints(resource_name, query):
             
                 execution_time = time.time()
@@ -247,12 +248,10 @@ class ProcessingModule( object ) :
                 )     
    
         except:
-           
-            return self.format_process_failure(
-                "processing_exception",
-                "Run-time failure"
-            )     
-   
+           return self.format_process_failure(
+                    "processing_exception",
+                    "your query could not be run"
+                )     
     
     #///////////////////////////////////////////////
      

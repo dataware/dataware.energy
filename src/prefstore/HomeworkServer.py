@@ -270,23 +270,35 @@ def test_query():
             
             query = request.GET['query']
             
+            print "got query... %s" % query
+             
             data = pm.invoke_test_processor_sql(query)
         
+            print "invoked the sql!!"
+            
+            print data
+            
             result = json.loads( 
                 data.replace( '\r\n','\n' ), 
                 strict=False 
             )
             
+            print result
+            
             if result['success']:
-                values = json.loads(result['return'])
+                values = json.loads(result['return']) 
                 if isinstance(values, list):
                     if len(values) > 0:
                         if isinstance(values[0], dict):
                             keys = list(values[0].keys())
                             return template('result_template', user=user, result=values, keys=keys)
-            return data
-            
+                return data
+            else:
+                print "RETURNING SQL ERROR"
+                return json.dumps({"result": "Error running sql"}) 
+                
         except Exception, e:
+            print "error undertaking query!!"
             return data
     
     if request.method=="POST":
@@ -877,8 +889,9 @@ def worker():
                 request['jsonParams'],
                 request['view_url']
             )
-    
+           
             if not(result is None):
+            
                 url = request['result_url']
                 data = urllib.urlencode(json.loads(result))
                 req = urllib2.Request(url,data)
@@ -887,7 +900,8 @@ def worker():
                 f.close()
         
         except Exception, e:   
-            print "Exception!!"        
+            print "Exception! - error returning results"
+            
         finally:
             pqueue.task_done()
             
