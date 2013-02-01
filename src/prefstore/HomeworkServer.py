@@ -3,6 +3,7 @@ Created on 12 April 2011
 @author: jog
 """
 from __future__ import division
+from gevent import monkey; monkey.patch_all()
 from bottle import *                #@UnusedWildImport
 from ProcessingModule import *      #@UnusedWildImport
 from InstallationModule import *    #@UnusedWildImport
@@ -19,8 +20,6 @@ from functools import wraps
 
 import urllib2
 import urllib
-
-from gevent import monkey; monkey.patch_all()
 from gevent.event import Event
 from gevent.queue import JoinableQueue
 import gevent
