@@ -64,7 +64,7 @@
     <div class="row">
         <div class="span12">
             <div class="alert alert-info">
-                When you sign up your resource to a catalog, you will be able to share your data with others.  The catalog will provide you with facilities to manage which third parties can access which elements of your data.  If you do not have a catalog set up we'd recommend <a href='http://datawarecatalog.appspot.com'>this one </a>
+                When you sign up your resource to a catalog, you will be able to share your data with others.  The catalog will provide you with facilities to manage which third parties can access which elements of your data.  If you do not have a catalog set up we'd recommend <a href='http://{{catalog_uri}}'>this one </a>
             </div>
         </div>
     </div>
@@ -75,7 +75,7 @@
             <form action="javascript:install_resource('{{resource_name}}')">
                 <input type="hidden" name="submission" value="True" />
                 <select name="catalog_uri" class="span4" id="catalog_uri">
-                    <option>http://datawarecatalog.appspot.com</option>
+                    <option>{{catalog_uri}}</option>
                 </select>
                 <button class="btn btn-warning" type="submit">Use!</button>
             </form>

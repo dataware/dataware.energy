@@ -152,7 +152,7 @@ def install():
     except Exception, e:
         return error( e )        
         
-    return template( 'install_page_template', user=user, resource_name=resource_name) 
+    return template( 'install_page_template', user=user, resource_name=resource_name, catalog_uri=CATALOG_URI) 
     
 
 #///////////////////////////////////////////////
@@ -966,6 +966,7 @@ if __name__ == '__main__' :
     RESOURCES       = json.loads(Config.get("DatawareResources", "resources"))
     RESOURCE_URI    = Config.get("DatawareResource", "resource_uri")    #REALM = "http://www.prefstore.org"
     REALM           = Config.get("DatawareResource", "realm")    #WEB_PROXY = "http://mainproxy.nottingham.ac.uk:8080"
+    CATALOG_URI     = Config.get("Catalog", "catalog_uri")
     
     
     #resources =  json.loads(Config.get("DatawareResources", "resources")) 
