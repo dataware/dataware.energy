@@ -499,7 +499,7 @@ class ProcessingModule( object ) :
         
         print "table constraints met: %r" % valid
         
-        valid = set(keywords).issubset(self.ALLOWED_KEYWORDS)
+        valid = valid and set(keywords).issubset(self.ALLOWED_KEYWORDS)
         
         print "keyword and table constraints met: %r" % valid
         
