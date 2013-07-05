@@ -209,7 +209,7 @@ class ProcessingModule( object ) :
             if self._check_constraints(resource_name, query):
             
                 execution_time = time.time()
-                result = json.dumps(self.resourcedb.execute_query(query))
+                result = json.dumps(self.resourcedb.execute_query(query, parameters))
                
                 
                 try:

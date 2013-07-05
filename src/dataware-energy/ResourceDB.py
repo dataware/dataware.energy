@@ -167,10 +167,12 @@ class ResourceDB(object):
         
     #/////////////////////////////////////////////////////////////////////////////////////////////
     @safety_mysql
-    def execute_query(self, query):
-    
-        log.info("exec query: %s" % query)
-        self.cursor.execute( query )
+    def execute_query(self, query, parameters=None):
+   
+	if parameters is not None: 
+	  self.cursor.execute(query, parameters)
+	else:
+          self.cursor.execute( query )
         
         row = self.cursor.fetchall()
 
