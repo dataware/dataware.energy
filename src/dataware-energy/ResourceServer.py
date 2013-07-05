@@ -803,7 +803,7 @@ def generatedata():
     if user is None:
         redirect( "/login" ) 
     
-    resourcedb.generate_data()    
+    resourcedb.generate_fake_data()    
     redirect( ROOT_PAGE )
         
 #return a list of all resources (id, name, installed) for this user 

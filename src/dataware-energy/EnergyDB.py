@@ -164,11 +164,13 @@ class EnergyDB(object):
         
     #/////////////////////////////////////////////////////////////////////////////////////////////
     @safety_mysql
-    def execute_query(self, query):
-    
-        log.info("exec query: %s" % query)
-        self.cursor.execute( query )
-        
+    def execute_query(self, query, parameters=None):
+       
+  	if parameters is not None:
+	  self.cursor.execute(query, parameters)
+	else:
+	  self.cursor.execute( query )
+         
         row = self.cursor.fetchall()
 
         if not row is None:
@@ -183,10 +185,10 @@ class EnergyDB(object):
         
         cts = datetime.datetime.now()
         rightnow = cts.strftime("%Y/%m/%d:%H:%M:%S")
-        adayago = datetime.datetime.fromtimestamp(time.mktime(cts.timetuple())- deltahrs*60*60).strftime("%Y/%m/%d:%H:%M:%S")
+        since = datetime.datetime.fromtimestamp(time.mktime(cts.timetuple())- deltahrs*60*60).strftime("%Y/%m/%d:%H:%M:%S")
         
         query = """
-            select * from  %s.%s where ts > '%s' AND ts < '%s' order by sensorid,ts asc """ % ( self.DB_NAME, self.TBL_ENERGY, adayago,rightnow) 
+            select * from  %s.%s where ts > '%s' AND ts < '%s' order by sensorid,ts asc """ % ( self.DB_NAME, self.TBL_ENERGY, since,rightnow) 
         
         self.cursor.execute( query )
         row = self.cursor.fetchall()
@@ -195,6 +197,16 @@ class EnergyDB(object):
             return row
         else :
             return []
+
+    @safety_mysql
+    def generate_fake_data(self):
+	cts = datetime.datetime.now()
+        rightnow = cts.strftime("%Y/%m/%d:%H:%M:%S")
+        for x in range(0,60):
+	    atime = datetime.datetime.fromtimestamp(time.mktime(cts.timetuple())- x*60).strftime("%Y/%m/%d:%H:%M:%S")
+	    query = """
+		INSERT INTO %s.%s (ts,sensorid,watts) VALUES ('%s', %d, %d) """ % (self.DB_NAME, self.TBL_ENERGY, atime, 88, x*2)		
+            self.cursor.execute(query)
 
     @safety_mysql
     def fetch_schema(self, table):
