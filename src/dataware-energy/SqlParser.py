@@ -3,6 +3,8 @@
 import sqlparse
 from sqlparse.sql import IdentifierList, Identifier
 from sqlparse.tokens import Keyword, DML
+
+clauses = ['ORDER', 'GROUP']
     
 def is_subselect(parsed):
     if not parsed.is_group():
@@ -19,12 +21,14 @@ def extract_from_part(parsed):
             if is_subselect(item):
                 for x in extract_from_part(item):
                     yield x
+            elif item.ttype is Keyword and item.value.upper() in clauses:
+                from_seen = False
             else:
                 yield item
         elif item.ttype is Keyword and item.value.upper() == 'FROM':
             from_seen = True
 
-
+#how about the only identifiers allowed are x.x or x where x.x is database?
 def extract_table_identifiers(token_stream):
     for item in token_stream:
         if isinstance(item, IdentifierList):
@@ -49,5 +53,8 @@ def extract_keywords(sql):
     return list(extract_all_keywords(toks.tokens))
     
 def extract_tables(sql):
-    stream = extract_from_part(sqlparse.parse(sql)[0])
+    stmt = sqlparse.parse(sql)[0]
+    print stmt.tokens
+    stream = extract_from_part(stmt)
+    print stream
     return list(extract_table_identifiers(stream))
