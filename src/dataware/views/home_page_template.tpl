@@ -25,15 +25,14 @@ $(function(){
         </ul>
     
         <div class="row">
-            <div class="span10">
+            <div class="span8">
                         
                 <div data-bind="if: selectedResource().installed() == 0">
                     <div class="alert alert-info">
-                        <a data-bind="attr:{href:selectedResource().install_url}">Share your data</a>
+                        <a data-bind="attr:{href:selectedResource().install_url}">Share this data</a>
                     </div>
                 </div>
-                
-
+            
                <div data-bind="if: selectedResource().installed() == 1">
                   <div class="alert alert-success">
                   You are sharing this data with <a data-bind="attr:{href:selectedResource().catalog_uri()}"> <strong> <span data-bind="text:selectedResource().catalog_uri()"></span></strong></a>
@@ -41,12 +40,12 @@ $(function(){
                </div>        
              </div>
         </div>
+        
         <div class="row">
-            <div class="span10">
-                <div class="myview"></div>
+            <div class="span8">
+                %include skeleton_data data=data
             </div>
         </div>
-        
     </div>
 	%end
 </div>

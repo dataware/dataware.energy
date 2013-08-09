@@ -51,7 +51,7 @@ class InstallationModule( object ) :
     #///////////////////////////////////////////////
 
             
-    def initiate_install( self, user_id, catalog_uri, resource_name, resource_uri ):
+    def initiate_install( self, user_id, catalog_uri, resource_name, resource_uri, namespace ):
         
         #check that a valid catalog_uri has been supplied
         if not self._is_valid_uri( catalog_uri ):
@@ -63,7 +63,7 @@ class InstallationModule( object ) :
         
         #obtain the resource_id assigned by the catalog - or
         #if it doesn't exist, register ourselves at the catalog
-        resource_id = self._check_registration( catalog_uri, resource_name, resource_uri )
+        resource_id = self._check_registration( catalog_uri, resource_name, resource_uri, namespace )
        
         #check to see if we have already made the install request
         install = self.db.fetch_install( user_id, catalog_uri, resource_name ) 
@@ -210,7 +210,7 @@ class InstallationModule( object ) :
     #///////////////////////////////////////////////
     
         
-    def _check_registration( self, catalog_uri, resource_name, resource_uri ):
+    def _check_registration( self, catalog_uri, resource_name, resource_uri, namespace ):
     
         #determine if we have already registered at this resource - must check the resource_name too!
         catalog = self.db.fetch_catalog( catalog_uri, resource_name )
@@ -223,7 +223,7 @@ class InstallationModule( object ) :
         #and if not register ourselves with the catalog, and get one...
         else:
             log.info("NEW REGISTRATION, MAKING REGISTRATION REQUEST")
-            catalog_response = self._make_registration_request( catalog_uri, resource_name, resource_uri )
+            catalog_response = self._make_registration_request( catalog_uri, resource_name, resource_uri, namespace )
             log.info(catalog_response)
             resource_id = self._parse_registration_results( catalog_response )
             log.info("INSERTING %s %s %s" % (catalog_uri, resource_id, resource_name))
@@ -254,7 +254,7 @@ class InstallationModule( object ) :
     #///////////////////////////////////////////////
 
             
-    def _make_registration_request( self, catalog_uri, resource_name, resource_uri ):
+    def _make_registration_request( self, catalog_uri, resource_name, resource_uri, namespace ):
         
         #if necessary setup a proxy
         if ( self.web_proxy  ):
@@ -267,7 +267,8 @@ class InstallationModule( object ) :
         try:
             data = urllib.urlencode({
                 'resource_name': resource_name,
-                'redirect_uri': resource_uri, })
+                'redirect_uri': resource_uri, 
+                'namespace': namespace})
             url = "%s/resource_register" % ( catalog_uri, )
             req = urllib2.Request( url, data )
             response = urllib2.urlopen( req )

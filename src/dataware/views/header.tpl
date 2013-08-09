@@ -3,7 +3,6 @@
 <title>My dataware resources</title>
 
 <link rel="stylesheet" type="text/css" href="./static/bootstrap/css/bootstrap.min.css" /> 
-<link rel="stylesheet" type="text/css" href="./static/jqcloud.css" />
 <script type="text/javascript" src="./static/jquery/jquery-1.8.2.min.js"></script>
 <script type="text/javascript" src="./static/jquery/jquery-ui-1.8.23.min.js"></script>
 <script type="text/javascript" src="./static/knockout/knockout-2.1.0.js"></script>
@@ -180,7 +179,7 @@
 
 <script>
 
-	PREFSTORE = "http://hwresource.block49.net:9000/" 
+	//PREFSTORE = "http://hwresource.block49.net:9000/" 
 	 
 	$( document ).ready( function() {
 		$( 'a.menu_button' ).click( function() {
