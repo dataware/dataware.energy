@@ -1,9 +1,0 @@
-#!/home/ubuntu/monitoring/venv/bin/python
-# EASY-INSTALL-ENTRY-SCRIPT: 'postman==0.6.0','console_scripts','postman'
-__requires__ = 'postman==0.6.0'
-import sys
-from pkg_resources import load_entry_point
-
-sys.exit(
-   load_entry_point('postman==0.6.0', 'console_scripts', 'postman')()
-)
