@@ -9,7 +9,7 @@ from ProcessingModule import *      #@UnusedWildImport
 from InstallationModule import *    #@UnusedWildImport
 from UpdateManager import *
 from DatawareDB import *            #@UnusedWildImport
-from ResourceDB import *           #@UnusedWildImport
+from EnergyDB import *           #@UnusedWildImport
 import time                         #@Reimport
 import OpenIDManager
 import logging.handlers
@@ -929,7 +929,7 @@ if __name__ == '__main__' :
     
     try:
        
-        resourcedb = ResourceDB(configfile, "ResourceDB")
+        resourcedb = EnergyDB(configfile, "ResourceDB")
         resourcedb.connect()
         resourcedb.check_tables()
         
