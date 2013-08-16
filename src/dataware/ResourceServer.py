@@ -767,7 +767,7 @@ def home( ):
     
     print json.dumps(resources)
     
-    return template( 'home_page_template', user=user, resources=json.dumps(resources), installs=installs, data=resourcedb.fetch_summary(), template_name="skeleton_data");
+    return template( 'home_page_template', user=user, resources=json.dumps(resources), installs=installs, data=resourcedb.fetch_summary(), template_name="energy_data");
  
 @route('/summary')
 def summary():
