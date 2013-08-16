@@ -40,7 +40,7 @@ def safety_mysql( fn ) :
 #///////////////////////////////////////
 
 
-class ResourceDB(object):
+class EnergyDB(object):
     ''' classdocs '''
     
     #///////////////////////////////////////
@@ -66,7 +66,7 @@ class ResourceDB(object):
         
         #///////////////////////////////////////
         self.createQueries = [
-            ( self.TBL_TERM_ENERGY, """
+            ( self.TBL_ENERGY, """
                 CREATE TABLE %s.%s (
                     ts varchar(20) NOT NULL,
                     sensorid int(11),

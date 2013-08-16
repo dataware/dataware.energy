@@ -14,10 +14,19 @@ import java.util.Enumeration;
 import java.util.Scanner;
 import java.util.TooManyListenersException;
 
-import org.hwdb.srpc.*;
+//import org.hwdb.srpc.*;
+
 import java.util.Date;
 import java.text.SimpleDateFormat;
 
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.SQLException;
+import java.sql.Statement;
+
+import java.util.Properties;
+import java.io.FileInputStream;
+ 
 public class Monitor implements Runnable, SerialPortEventListener{
 
     static CommPortIdentifier	portId;
@@ -33,18 +42,15 @@ public class Monitor implements Runnable, SerialPortEventListener{
 	{
 		boolean portFound = false;
 		String defaultPort = "/dev/tty.usbserial";
-		if (args.length != 1)
+		if (args.length == 0)
 		{
-			System.out.println("YOU FAIL");
-			System.exit( - 1);
+			System.out.println("using port: " + defaultPort);
 		}
-		else
+		else if (args.length >= 1)
 		{
-			//hubId = Integer.parseInt(args[0]);
 			defaultPort = args[0];
-			//user = args[2];
-			//apiKey = args[3];
 		}
+		
 		portList = CommPortIdentifier.getPortIdentifiers();
 		while (portList.hasMoreElements())
 		{
@@ -71,33 +77,38 @@ public class Monitor implements Runnable, SerialPortEventListener{
 	{
 		try
 		{
-		  
+		    
+		    //read in config file
+			String url = "", user ="", password="";
 			
+			Properties configFile = new Properties();
+			
+			configFile.load(new FileInputStream("../config.properties"));
+			try{
+			    String hostname = configFile.getProperty("hostname");
+			    String db       = configFile.getProperty("database");
+			    String port     = configFile.getProperty("port");
+			    
+			    user     = configFile.getProperty("user");
+			    password = configFile.getProperty("password");
+	            url = "jdbc:mysql://" + hostname + ":" + port + "/" + db;
+	            System.err.println(url);
+			}catch(Exception e){
+			    e.printStackTrace();
+			    System.exit(-1);
+			}
 			serialPort = (SerialPort)portId.open("SimpleReadApp", 2000);
 			inputScanner = new Scanner(serialPort.getInputStream());
 			serialPort.addEventListener(this);
 			serialPort.notifyOnDataAvailable(true);
 			serialPort.setSerialPortParams(57600, SerialPort.DATABITS_8, SerialPort.STOPBITS_1, SerialPort.PARITY_NONE);
 			
-			
 			try{
-			    SRPC srpc = new SRPC();
-			
-			    byte[] addr = new byte[]{
-			        (byte) 127,
-			        (byte) 0,
-			        (byte) 0,
-			        (byte) 1
-			    };
-			
-		    	connection = srpc.connect(addr, 987, "HWDB");
+			    connection = DriverManager.getConnection(url, user, password);
 			}catch(Exception e){
-			    System.err.println("Error connecting to database");
+			    e.printStackTrace();
+			    System.exit(-1);
 			}
-			
-			//readThread = new Thread(this);
-			//readThread.start();
-
 		}
 		catch (PortInUseException e)
 		{
@@ -148,19 +159,29 @@ public class Monitor implements Runnable, SerialPortEventListener{
 				break;
 
 			case SerialPortEvent.DATA_AVAILABLE:
-				//ArrayList<Reading> readings = new ArrayList<Reading>();
-				
 				
 				System.out.println("starting input scanner");
+				Statement statement = null;
+				
+				try{
+				    statement = connection.createStatement();
+				}
+				catch(SQLException e){
+				    e.printStackTrace();
+				    break;
+				}
 				
 				while (inputScanner.hasNext())
 				{
 
 					String parsableLine = inputScanner.next();
-					System.out.println(parsableLine);
+					
+					System.err.println(parsableLine);
+					
 					if(parsableLine.contains("hist"))
 					{
 						// do nothing
+						
 					}
 					else
 					{
@@ -168,26 +189,27 @@ public class Monitor implements Runnable, SerialPortEventListener{
 						{
 							try
 							{
-							    String ts = format.format(new Date());
 							    
+							    String ts = format.format(new Date()); 
 								int sensorId = Integer.parseInt(parseSingleElement(parsableLine, "id"));
 								double value = Double.parseDouble(parseSingleElement(parsableLine, "watts"));
 								
-								System.out.println(ts + " " + sensorId + " " + value);
-								
 								if (value > 0){
-								    String stmt = String.format("SQL: insert into EnergyUse values(\"%s\", '%d', '%f')", ts, sensorId, value);
-								    System.out.println(stmt);
-		                            System.out.println(connection.call(stmt));
+								    
+								    String stmt = String.format("insert into energy_data values(\"%s\", '%d', '%f')", ts, sensorId, value);
+								    statement.executeUpdate(stmt);  
 								}
-								//readings.add(new Reading(sensorId, value));
 							}
-							catch(IOException ioe){
-							    ioe.printStackTrace();
+							catch(SQLException se){
+							    se.printStackTrace();
 							}
 							catch (NumberFormatException n)
 							{
 								n.printStackTrace();
+							}
+							catch (Exception e){
+							    System.err.println(e.getMessage());
+							    e.printStackTrace();
 							}
 							if (parsableLine.contains("</msg>"))
 							{
@@ -196,8 +218,10 @@ public class Monitor implements Runnable, SerialPortEventListener{
 							}
 						}
 					}
-				}
-		}
+			    } //end of inputScanner.hasNext()
+			default:
+			    break;
+		}//end of switch
 	}
 
 	public String parseSingleElement(String m, String t)
