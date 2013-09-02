@@ -1,5 +1,5 @@
 #!/usr/bin/python
 import sys
-sys.path.append('/root/dataware.energy/src/dataware')
+sys.path.append('/usr/share/pyshared')
 from dataware import ResourceServer 
 ResourceServer.main()

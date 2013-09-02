@@ -20,7 +20,8 @@ mkdir -p var/log/dataware
 chmod -R 777 var/log/dataware
 mv ../../dataware/static ./var/dataware
 mv ../../dataware/views  ./var/dataware
-mv ../../dataware/config.cfg ./etc/dataware/sample_config.cfg
+cp ../../dataware/__init__.py ./usr/share/pyshared/dataware
+cp ../../dataware/config.cfg ./usr/share/pyshared/dataware
 cd ..
 dpkg --build dataware-energy dataware-energy.deb
 cp dataware-energy.deb $ROOT_DIR 
