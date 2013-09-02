@@ -1,4 +1,4 @@
-create database dataware_data;
-grant usage on dataware_data.* to 'dataware-resourc'@localhost; 
-grant all privileges on dataware_data.* to 'dataware-resourc'@localhost;
+create database dataware_energy_data;
+grant usage on dataware_energy_data.* to 'dataware-energy'@localhost; 
+grant all privileges on dataware_energy_data.* to 'dataware-energy'@localhost;
 

@@ -1,3 +1,4 @@
+*.deb
 *.py[cod]
 
 # C extensions
@@ -36,3 +37,5 @@ nosetests.xml
 
 #Got some java code too
 *.class
+
+src/deb_dist
