@@ -1,0 +1,31 @@
+Format: 1.8
+Date: Mon, 02 Sep 2013 01:46:40 -0400
+Source: dataware-resource
+Binary: dataware-resource
+Architecture: source armel
+Version: 0.1-1
+Distribution: unstable
+Urgency: low
+Maintainer: Tom Lodge <tlodge@gmail.com>
+Changed-By: unknown <unknown@unknown>
+Description: 
+ dataware-resource - Dataware resource component
+Changes: 
+ dataware-resource (0.1-1) unstable; urgency=low
+ .
+   * source package automatically created by stdeb 0.6.0
+Checksums-Sha1: 
+ 600fa3f6e155c38892fb2853b4bc1ffbb36ed759 816 dataware-resource_0.1-1.dsc
+ 35d694c65ce6625089d0b0626d3040c25ee947f3 785430 dataware-resource_0.1.orig.tar.gz
+ e3cf5deeb21889f81080df4ac8f8f4b7661a43d1 1409 dataware-resource_0.1-1.diff.gz
+ fb8766d666824c06e7db40cc3486a99efc8fee0b 22770 dataware-resource_0.1-1_armel.deb
+Checksums-Sha256: 
+ 4851d524ec9402add9f436752b608acda512ac4048776fdf30c00ff796f61117 816 dataware-resource_0.1-1.dsc
+ dad69b9baaf8110b72282d09b0f20861790a9dd17ae8d5222b0647b935fca109 785430 dataware-resource_0.1.orig.tar.gz
+ 8f7b56b808e84b82cef88b57b762348709d48209a5678fdfece7acbf6a2dd6cf 1409 dataware-resource_0.1-1.diff.gz
+ 674c967afe3890c9c51ec50d65bd4d098b2c60a55efc013bdd356b5a03dd20a9 22770 dataware-resource_0.1-1_armel.deb
+Files: 
+ eb8e09467edde1cd4fc0bdfae77a9558 816 python optional dataware-resource_0.1-1.dsc
+ 21b7f3ef9646aac074384eb55d34ae7c 785430 python optional dataware-resource_0.1.orig.tar.gz
+ 0804ee3ce1a43ad143d6cbf253c8e143 1409 python optional dataware-resource_0.1-1.diff.gz
+ ee482cb4079855fad5c5f6f87056538d 22770 python optional dataware-resource_0.1-1_armel.deb

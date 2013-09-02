@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 """
 Created on 12 April 2011
 @author: jog
@@ -5,13 +6,13 @@ Created on 12 April 2011
 from __future__ import division
 from gevent import monkey; monkey.patch_all()
 from bottle import *                #@UnusedWildImport
-from ProcessingModule import *      #@UnusedWildImport
-from InstallationModule import *    #@UnusedWildImport
-from UpdateManager import *
-from DatawareDB import *            #@UnusedWildImport
-from EnergyDB import *           #@UnusedWildImport
+from dataware.ProcessingModule import *      #@UnusedWildImport
+from dataware.InstallationModule import *    #@UnusedWildImport
+from dataware.UpdateManager import *
+from dataware.DatawareDB import *            #@UnusedWildImport
+from dataware.ResourceDB import *           #@UnusedWildImport
 import time                         #@Reimport
-import OpenIDManager
+import dataware.OpenIDManager as OpenIDManager
 import logging.handlers
 import math
 import json
@@ -30,7 +31,7 @@ pid = str(os.getpid())
 print "pid is %s" % pid
 
 log = logging.getLogger( "console_log" )
-
+TEMPLATE_PATH.insert(0, '/var/dataware/views')
 data_log = logging.getLogger( "data_log" )
 
 class std_writer( object ):
@@ -78,6 +79,8 @@ def triggertest():
     
 @route( '/stream', method = "GET", )
 def stream():
+    
+    
     try:
         user = check_login()
         if ( not user ): 
@@ -92,6 +95,7 @@ def stream():
        
         #if (message['user'] and message['user'] == user['user_id']):
         log.info("sending %s" % message['message'])
+        log.info(message)
         jsonmsg = json.dumps(message)
         yield jsonmsg
         
@@ -171,7 +175,7 @@ def install_request():
     resource_name = request.GET.get( "resource_name", None )
     
     try: 
-        url = im.initiate_install( user[ "user_id" ], catalog_uri, resource_name, RESOURCE_URI, REALM)
+        url = im.initiate_install( user[ "user_id" ], catalog_uri, resource_name, RESOURCES[resource_name]['resource_uri'])
         return format_success( url )
     except ParameterException, e:
         return format_failure( "resource", e.msg )
@@ -261,13 +265,24 @@ def test_query():
     
     if request.method=="GET":
         try:
+            #jsonParams = request.GET['parameters']
             
             query = request.GET['query']
+            
+            print "got query... %s" % query
+             
             data = pm.invoke_test_processor_sql(query)
-	    result = json.loads( 
+        
+            print "invoked the sql!!"
+            
+            print data
+            
+            result = json.loads( 
                 data.replace( '\r\n','\n' ), 
                 strict=False 
             )
+            
+            print result
             
             if result['success']:
                 values = json.loads(result['return']) 
@@ -278,11 +293,13 @@ def test_query():
                             return template('result_template', user=user, result=values, keys=keys)
                 return data
             else:
+                print "RETURNING SQL ERROR"
                 return json.dumps({"result": "Error running sql"}) 
                 
         except Exception, e:
-   		return json.dumps({"result": "Error running sql"}) 
-
+            print "error undertaking query!!"
+            return data
+    
     if request.method=="POST":
         try:
             jsonParams =  request.forms.get('parameters')
@@ -313,7 +330,7 @@ def test_query():
 @route( "/static/:filename" )
 def user_get_static_file( filename ):
     
-    return static_file( filename, root='static/' )
+    return static_file( filename, root='/var/dataware/static/' )
 
 
 
@@ -321,7 +338,7 @@ def user_get_static_file( filename ):
 
 def user_get_static_file( path ):
    
-    return static_file( path, root='static/' )
+    return static_file( path, root='/var/dataware/static/' )
 
 
 
@@ -356,6 +373,7 @@ def invoke_processor():
         return json.dumps({"result":"success"})
        
     except Exception, e:
+        print "EXCEPTION...."
         raise e
         return json.dumps({ 
             'success':False,        
@@ -551,7 +569,7 @@ def set_authentication_cookie( user_id, user_name = None ):
                             
 
 #//////////////////////////////////////////////////////////
-# RESOURCE SPECIFIC WEB-API CALLS
+# PREFSTORE SPECIFIC WEB-API CALLS
 #//////////////////////////////////////////////////////////
 
 
@@ -588,6 +606,14 @@ def valid_name( str ):
 
 #///////////////////////////////////////////////
     
+@route('/queryurl', method = "GET")  
+def query_url():
+    try:
+        return 0
+        #resourcedb.fetch_urls()
+    except Exception, e:
+        return error( e )
+
 @route( '/register', method = "GET" )
 def user_register():
     
@@ -643,8 +669,8 @@ def user_register():
                 datadb.commit()
                 
                 #also insert the list of this user's resources (provided in the config file..)
-		for resource in RESOURCES:
-                    datadb.insert_resource( user_id, resource)
+                for key in RESOURCES:
+                    datadb.insert_resource( user_id, key) 
                 datadb.commit()
                  
             except Exception, e:
@@ -767,26 +793,11 @@ def home( ):
     
     print json.dumps(resources)
     
-    return template( 'home_page_template', user=user, resources=json.dumps(resources), installs=installs, data=resourcedb.fetch_summary(), template_name="energy_data");
+    return template( 'home_page_template', user=user, resources=json.dumps(resources), installs=installs);
  
-@route('/summary')
-def summary():
-    try:
-        user = check_login()
-    except RegisterException, e:
-        redirect( "/register" ) 
-    except LoginException, e:
-        return error( e.msg )
-      
-    if user is None:
-        redirect( "/login" ) 
-        
-    data = resourcedb.fetch_summary()    
-            
-    return json.dumps(data)
-    
-@route('/generate_fake_data')
-def generatedata():
+
+@route('/urls')
+def urls():
     
     try:
         user = check_login()
@@ -797,10 +808,28 @@ def generatedata():
       
     if user is None:
         redirect( "/login" ) 
-    
-    resourcedb.generate_data()    
-    redirect( ROOT_PAGE )
         
+
+    urls=[]
+    
+    browsing = resourcedb.fetch_url_count()    
+
+    if browsing:
+    
+        multiplier = 50 / float(browsing[0]['requests']);
+     
+        for row in browsing:
+        
+            link = "javascript:wordclicked({'url': '%s', 'macaddrs':'%s', 'ipdaddrs':'%s' , 'requests' :%d})" % (row['url'],row['macaddrs'],row['ipaddrs'],row['requests'])
+        
+            urls.append({'text': row['url'], 
+                        'weight':int(float(row['requests']) * multiplier),
+                        'link': link,
+                        'html': {'title': "url browsed"}
+                        })
+                        
+    return json.dumps(urls)
+    
 #return a list of all resources (id, name, installed) for this user 
 @route('/resources')
 def resources():   
@@ -822,6 +851,32 @@ def resources():
 def purge():
     datadb.purgedata()
     redirect( ROOT_PAGE )
+    
+@route('/summary')
+def summary():
+
+    try:
+        user = check_login()
+    except RegisterException, e:
+        redirect( "/register" ) 
+    except LoginException, e:
+        return error( e.msg )
+    except Exception, e:
+        return error( e )     
+    
+    #if the user doesn't exist or is not logged in,
+    #then send them home. naughty user.
+    if ( not user ) : redirect( ROOT_PAGE )
+
+    user[ "registered_str" ] = time.strftime( "%d %b %Y %H:%M", time.gmtime( user[ "registered" ] ) )
+    user[ "last_distill_str" ] = time.strftime( "%d %b %Y %H:%M")
+    user[ "average_appearances" ] = 0
+    user[ "total_documents" ] = 0
+    user[ "total_term_appearances" ] = 0
+    summary = None # datadb.fetch_user_summary( user[ "user_id" ] )
+
+    return template( 'summary_page_template', user=user, summary=summary );
+    
     
 def worker():
     while True:
@@ -853,8 +908,10 @@ def worker():
 # MAIN FUNCTION
 #//////////////////////////////////////////////////////////
 
-def main():
 
+if __name__ == '__main__' :
+
+    #print "\n".join(sys.argv)
     
     print "config file: %s" % sys.argv[1];
     
@@ -871,7 +928,7 @@ def main():
     ch = logging.StreamHandler(sys.stdout)
     
     fh = logging.handlers.TimedRotatingFileHandler( 
-        filename='logs/dataware_resource_data.log',
+        filename='/var/log/prefstore/prefstore_data.log',
         when='midnight', 
         interval=21 )
         
@@ -895,26 +952,25 @@ def main():
     Config = ConfigParser.ConfigParser()
     Config.read(configfile)
     
-    EXTENSION_COOKIE = "dataware_logged_in"
+    EXTENSION_COOKIE = "prefstore_logged_in"
     PORT = Config.get("DatawareResource", "port")
     HOST = "0.0.0.0"  
     BOTTLE_QUIET = True 
     ROOT_PAGE = "/"
     RESOURCE_NAME   = Config.get("DatawareResource", "resource_name")
-  
-    RESOURCES       = json.loads(Config.get("Resources", "resources"))
-    RESOURCE_URI    = "%s:%s" % (Config.get("DatawareResource", "resource_uri"), PORT) 
-    REALM           = "%s:%s" % (Config.get("DatawareResource", "realm"), PORT)   
-    #WEB_PROXY = "http://aproxy:port"
+    RESOURCES       = json.loads(Config.get("DatawareResources", "resources"))
+    RESOURCE_URI    = Config.get("DatawareResource", "resource_uri")    #REALM = "http://www.prefstore.org"
+    REALM           = Config.get("DatawareResource", "realm")    #WEB_PROXY = "http://mainproxy.nottingham.ac.uk:8080"
     CATALOG_URI     = Config.get("Catalog", "catalog_uri")
     
     
+    #resources =  json.loads(Config.get("DatawareResources", "resources")) 
     
     #-------------------------------
     # declare initialization in logs
     #-------------------------------        
     print "-"*40
-    print "DATAWARE IGNITION"
+    print "PREFSTORE IGNITION"
     print "PORT = %s" % PORT
     print "HOST = %s" % HOST
     print "REALM = %s" % REALM
@@ -927,7 +983,7 @@ def main():
     
     try:
        
-        resourcedb = EnergyDB(configfile, "ResourceDB")
+        resourcedb = ResourceDB(configfile, "ResourceDB")
         resourcedb.connect()
         resourcedb.check_tables()
         
@@ -966,6 +1022,9 @@ def main():
     #---------------------------------
     try:
         debug( True )
+        #from socketio.server import SocketIOServer 
+        #server = SocketIOServer((HOST, int(PORT)), app, namespace="socket.io", policy_server=False)
+        #server.serve_forever()
         run( host=HOST, port=PORT, server='gevent')
     except Exception, e:  
         log.error( "Web Server Exception: %s" % ( e, ) )
@@ -974,7 +1033,8 @@ def main():
     #---------------------------------
     # Initialization Complete
     #---------------------------------
+    log.info("Catalog Firing on all cylinders...")
     log.info("-"*40)
 
-if __name__ == '__main__':
-    main()
+    
+   
