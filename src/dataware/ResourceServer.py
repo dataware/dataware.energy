@@ -22,6 +22,7 @@ import urllib
 from gevent.event import Event
 from gevent.queue import JoinableQueue
 import gevent
+import signal
 #//////////////////////////////////////////////////////////
 # SETUP LOGGING FOR THIS MODULE
 #//////////////////////////////////////////////////////////
@@ -854,7 +855,6 @@ def worker():
 #//////////////////////////////////////////////////////////
 
 def main():
-
     
     print "config file: %s" % sys.argv[1];
     
@@ -871,7 +871,7 @@ def main():
     ch = logging.StreamHandler(sys.stdout)
     
     fh = logging.handlers.TimedRotatingFileHandler( 
-        filename='logs/dataware_resource_data.log',
+        filename='/var/log/dataware/dataware_resource_data.log',
         when='midnight', 
         interval=21 )
         
@@ -951,8 +951,7 @@ def main():
         um = UpdateManager()
         pm = ProcessingModule( datadb, resourcedb, um )
         im = InstallationModule( RESOURCE_NAME, RESOURCE_URI, datadb )
-       
-        pqueue = JoinableQueue()
+        gevent.signal(signal.SIGQUIT, gevent.shutdown) 
         gevent.spawn(worker)
         pqueue.join()
        
@@ -975,6 +974,8 @@ def main():
     # Initialization Complete
     #---------------------------------
     log.info("-"*40)
+
+pqueue = JoinableQueue()
 
 if __name__ == '__main__':
     main()
