@@ -1,0 +1,13 @@
+Source: dataware-resource 
+Maintainer: Tom Lodge <tlodge@gmail.com>
+Section: python
+Priority: optional
+Build-Depends: python-setuptools (>= 0.6b3), debhelper (>= 7), python-support (>= 0.8.4)
+Standards-Version: 3.8.4
+
+Package: dataware-resource 
+Architecture: any
+Depends: mysql-server, dbconfig-common, dataware-bottle, dataware-mysql-python, dataware-sqlalchemy,  dataware-wsgiref, dataware-gevent, dataware-sqlparse, ${misc:Depends}, ${python:Depends}
+XB-Python-Version: ${python:Versions}
+Provides: ${python:Provides}
+Description: Dataware resource component

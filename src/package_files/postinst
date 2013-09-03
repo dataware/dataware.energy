@@ -1,0 +1,12 @@
+#!/bin/sh
+
+set -e
+#set -x
+
+. /usr/share/debconf/confmodule
+. /usr/share/dbconfig-common/dpkg/postinst.mysql 
+dbc_generate_include=template:/etc/dataware/config.cfg
+dbc_generate_include_args="-o template_infile=/usr/share/pyshared/dataware/config_tom.cfg"
+dbc_go dataware-resource $@
+
+#DEBHELPER#

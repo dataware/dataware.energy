@@ -1,0 +1,3 @@
+recursive-include dataware *
+include LICENSE
+include MANIFEST.in
