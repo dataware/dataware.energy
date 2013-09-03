@@ -1,2 +1,2 @@
-KERNEL=="ttyUSB*",  ACTION=="add", RUN+="/root/dataware.energymonitor/runme.sh %r/%k"
-KERNEL=="ttyUSB*",  ACTION=="remove", RUN+="/root/dataware.energymonitor/killpids.sh"
+KERNEL=="ttyUSB*",  ACTION=="add", RUN+="/usr/bin/currentcost-monitor %r/%k"
+KERNEL=="ttyUSB*",  ACTION=="remove", RUN+="/usr/bin/currentcost-stop"
