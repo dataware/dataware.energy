@@ -32,6 +32,7 @@ cp ../../dataware/__init__.py ./usr/share/pyshared/dataware
 cp ../../dataware/config.cfg ./usr/share/pyshared/dataware
 cp $ROOT_DIR/monitor/currentcost/config.properties tmp/monitor.properties 
 cp $ROOT_DIR/monitor/currentcost/bin/currentcost-energy-monitor.jar usr/share/java 
+cp $ROOT_DIR/monitor/currentcost/libs/ini4j-0.5.2.jar usr/share/java
 cp $ROOT_DIR/monitor/currentcost/01UsbAdded.rules etc/udev/rules.d
 cd ..
 dpkg --build dataware-energy dataware-energy.deb

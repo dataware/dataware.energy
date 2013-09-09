@@ -14,8 +14,6 @@ import java.util.Enumeration;
 import java.util.Scanner;
 import java.util.TooManyListenersException;
 
-//import org.hwdb.srpc.*;
-
 import java.util.Date;
 import java.text.SimpleDateFormat;
 
@@ -24,9 +22,10 @@ import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.sql.Statement;
 
-import java.util.Properties;
 import java.io.FileInputStream;
- 
+import java.io.File;
+import org.ini4j.Wini; 
+
 public class Monitor implements Runnable, SerialPortEventListener{
 
     static CommPortIdentifier	portId;
@@ -42,13 +41,14 @@ public class Monitor implements Runnable, SerialPortEventListener{
 	{
 		boolean portFound = false;
 		String defaultPort = "/dev/tty.usbserial";
-		if (args.length == 0)
-		{
-			System.out.println("using port: " + defaultPort);
-		}
-		else if (args.length >= 1)
+		String iniFile = "/etc/dataware/config.cfg";
+		if (args.length >= 1)
 		{
 			defaultPort = args[0];
+		}
+	        if (args.length >= 2)
+		{
+			iniFile = args[1];        
 		}
 		
 		portList = CommPortIdentifier.getPortIdentifiers();
@@ -62,7 +62,7 @@ public class Monitor implements Runnable, SerialPortEventListener{
 					System.out.println("Found port: " + defaultPort);
 					portFound = true;
 					@SuppressWarnings("unused")
-					Monitor reader = new Monitor();
+					Monitor reader = new Monitor(iniFile);
 				}
 			}
 		}
@@ -73,7 +73,7 @@ public class Monitor implements Runnable, SerialPortEventListener{
 
 	}
 
-	public Monitor()
+	public Monitor(String iniFile)
 	{
 		try
 		{
@@ -81,18 +81,14 @@ public class Monitor implements Runnable, SerialPortEventListener{
 		    //read in config file
 			String url = "", user ="", password="";
 			
-			Properties configFile = new Properties();
-			
-			configFile.load(new FileInputStream("../config.properties"));
 			try{
-			    String hostname = configFile.getProperty("hostname");
-			    String db       = configFile.getProperty("database");
-			    String port     = configFile.getProperty("port");
-			    
-			    user     = configFile.getProperty("user");
-			    password = configFile.getProperty("password");
-	            url = "jdbc:mysql://" + hostname + ":" + port + "/" + db;
-	            System.err.println(url);
+			    Wini ini = new Wini(new File(iniFile));
+			    String hostname = ini.get("ResourceDB","hostname");
+			    String db 	= ini.get("ResourceDB", "dbname");
+	          	    user   = ini.get("ResourceDB", "username");
+			    password  = ini.get("ResourceDB", "password");
+	            	    url = "jdbc:mysql://" + hostname + ":3306/" + db;
+	            	    System.out.println(url);
 			}catch(Exception e){
 			    e.printStackTrace();
 			    System.exit(-1);

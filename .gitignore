@@ -37,5 +37,5 @@ nosetests.xml
 
 #Got some java code too
 *.class
-
+currentcost-energy-monitor.jar
 src/deb_dist
