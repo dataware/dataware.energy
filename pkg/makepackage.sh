@@ -20,7 +20,6 @@ cd debian/dataware-energy
 mkdir -p var/dataware/
 mkdir -p etc/dataware
 mkdir -p var/log/dataware
-mkdir -p tmp
 #make the directory for the java monitor code
 mkdir -p usr/share/java
 #and for the auto start using udev
@@ -30,7 +29,6 @@ mv ../../dataware/static ./var/dataware
 mv ../../dataware/views  ./var/dataware
 cp ../../dataware/__init__.py ./usr/share/pyshared/dataware
 cp ../../dataware/config.cfg ./usr/share/pyshared/dataware
-cp $ROOT_DIR/monitor/currentcost/config.properties tmp/monitor.properties 
 cp $ROOT_DIR/monitor/currentcost/bin/currentcost-energy-monitor.jar usr/share/java 
 cp $ROOT_DIR/monitor/currentcost/libs/ini4j-0.5.2.jar usr/share/java
 cp $ROOT_DIR/monitor/currentcost/01UsbAdded.rules etc/udev/rules.d

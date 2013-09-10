@@ -41,7 +41,7 @@ public class Monitor implements Runnable, SerialPortEventListener{
 	{
 		boolean portFound = false;
 		String defaultPort = "/dev/tty.usbserial";
-		String iniFile = "/etc/dataware/config.cfg";
+		String iniFile = "/etc/dataware/energy_config.cfg";
 		if (args.length >= 1)
 		{
 			defaultPort = args[0];
