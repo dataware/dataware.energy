@@ -17,7 +17,7 @@ cd ..
 cp $PKG_DIR/mysql.sql ./
 dpkg-buildpackage -rfakeroot -uc -us
 cd debian/dataware-energy
-mkdir -p var/dataware/
+mkdir -p var/dataware/energy
 mkdir -p etc/dataware
 mkdir -p var/log/dataware
 #make the directory for the java monitor code
@@ -25,10 +25,11 @@ mkdir -p usr/share/java
 #and for the auto start using udev
 mkdir -p etc/udev/rules.d
 chmod -R 777 var/log/dataware
-mv ../../dataware/static ./var/dataware
-mv ../../dataware/views  ./var/dataware
+mv ../../dataware/energy/static ./var/dataware/energy
+mv ../../dataware/energy/views  ./var/dataware/energy
 cp ../../dataware/__init__.py ./usr/share/pyshared/dataware
-cp ../../dataware/config.cfg ./usr/share/pyshared/dataware
+cp ../../dataware/energy/__init__.py ./usr/share/pyshared/dataware/energy
+cp ../../dataware/energy/config.cfg ./usr/share/pyshared/dataware/energy
 cp $ROOT_DIR/monitor/currentcost/bin/currentcost-energy-monitor.jar usr/share/java 
 cp $ROOT_DIR/monitor/currentcost/libs/ini4j-0.5.2.jar usr/share/java
 cp $ROOT_DIR/monitor/currentcost/01UsbAdded.rules etc/udev/rules.d

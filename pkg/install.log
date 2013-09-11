@@ -1,0 +1,212 @@
+Reading package lists...
+Building dependency tree...
+Reading state information...
+The following extra packages will be installed:
+  dataware-mysql-python dbconfig-common libdbd-mysql-perl libmysqlclient16
+  mysql-client-5.1 mysql-common mysql-server mysql-server-5.1
+  mysql-server-core-5.1
+Suggested packages:
+  virtual-mysql-client mysql-client postgresql-client tinyca
+The following NEW packages will be installed:
+  dataware-energy dataware-mysql-python dbconfig-common libdbd-mysql-perl
+  libmysqlclient16 mysql-client-5.1 mysql-common mysql-server mysql-server-5.1
+  mysql-server-core-5.1
+0 upgraded, 10 newly installed, 0 to remove and 94 not upgraded.
+Need to get 0 B/23.1 MB of archives.
+After this operation, 52.8 MB of additional disk space will be used.
+WARNING: The following packages cannot be authenticated!
+  dataware-mysql-python dataware-energy
+Preconfiguring packages ...
+[1;24r[4l[?25l[?1c[0;10m[37m[40m[1;24r[H[J[1;1H[1m[37m[44m[K
+[K
+[K
+[K
+[K
+[K
+[K
+[K
+[K
+[K
+[K
+[K
+[K
+[K
+[K
+[K
+[K
+[K
+[K
+[K
+[K
+[K
+[K
+[K[1;1H[?25l[?1c[?25h[?0c[0;10m[37m[44mPackage configuration[6;3H[30m[47m┌────────────────────┤ [31mConfiguring mysql-server-5.1[30m ├─────────────────────┐[7;3H│ While not mandatory, it is highly recommended that you set a password   │[1m[37m[40m [8;3H[0;10m[30m[47m│ for the MySQL administrative "root" user.                               │[1m[37m[40m [9;3H[0;10m[30m[47m│                                                                         │[1m[37m[40m [10;3H[0;10m[30m[47m│ If this field is left blank, the password will not be changed.          │[1m[37m[40m [11;3H[0;10m[30m[47m│                                                                         │[1m[37m[40m [12;3H[0;10m[30m[47m│ New password for the MySQL "root" user:                                 │[1m[37m[40m [13;3H[0;10m[30m[47m│                                                                         │[1m[37m[40m [14;3H[0;10m[30m[47m│ [37m[44m_______________________________________________________________________[30m[47m │[1m[37m[40m [15;3H[0;10m[30m[47m│                                                                         │[1m[37m[40m [16;3H[0;10m[30m[47m│                                 <Ok>                                    │[1m[37m[40m [17;3H[0;10m[30m[47m│                                                                         │[1m[37m[40m [18;3H[0;10m[30m[47m└─────────────────────────────────────────────────────────────────────────┘[1m[37m[40m [19;4H                                                                           [14;5H[0;10m[37m[44m*****_____******[?25l[?1c[16;37H[41m<Ok>[16;38H[?25h[?0c[24;1H[40m[0;10m[39;49m[K[1;24r[4l[?25l[?1c[0;10m[37m[40m[1;24r[H[J[1;1H[1m[37m[44m[K
+[K
+[K
+[K
+[K
+[K
+[K
+[K
+[K
+[K
+[K
+[K
+[K
+[K
+[K
+[K
+[K
+[K
+[K
+[K
+[K
+[K
+[K
+[K[1;1H[?25l[?1c[?25h[?0c[0;10m[37m[44mPackage configuration[8;17H[30m[47m┌──────┤ [31mConfiguring mysql-server-5.1[30m ├───────┐[9;17H│                                             │[1m[37m[40m [10;17H[0;10m[30m[47m│                                             │[1m[37m[40m [11;17H[0;10m[30m[47m│ Repeat password for the MySQL "root" user:  │[1m[37m[40m [12;17H[0;10m[30m[47m│                                             │[1m[37m[40m [13;17H[0;10m[30m[47m│ [37m[44m___________________________________________[30m[47m │[1m[37m[40m [14;17H[0;10m[30m[47m│                                             │[1m[37m[40m [15;17H[0;10m[30m[47m│                   <Ok>                      │[1m[37m[40m [16;17H[0;10m[30m[47m│                                             │[1m[37m[40m [17;17H[0;10m[30m[47m└─────────────────────────────────────────────┘[1m[37m[40m [18;18H                                               [13;19H[0;10m[37m[44m******[?25l[?1c[15;37H[41m<Ok>[15;38H[?25h[?0c[24;1H[40m[0;10m[39;49m[KSelecting previously deselected package mysql-common.
+(Reading database ... (Reading database ... 5%(Reading database ... 10%(Reading database ... 15%(Reading database ... 20%(Reading database ... 25%(Reading database ... 30%(Reading database ... 35%(Reading database ... 40%(Reading database ... 45%(Reading database ... 50%(Reading database ... 55%(Reading database ... 60%(Reading database ... 65%(Reading database ... 70%(Reading database ... 75%(Reading database ... 80%(Reading database ... 85%(Reading database ... 90%(Reading database ... 95%(Reading database ... 100%(Reading database ... 46407 files and directories currently installed.)
+Unpacking mysql-common (from .../mysql-common_5.1.49-3_all.deb) ...
+Selecting previously deselected package libmysqlclient16.
+Unpacking libmysqlclient16 (from .../libmysqlclient16_5.1.49-3_armel.deb) ...
+Selecting previously deselected package libdbd-mysql-perl.
+Unpacking libdbd-mysql-perl (from .../libdbd-mysql-perl_4.016-1_armel.deb) ...
+Selecting previously deselected package mysql-client-5.1.
+Unpacking mysql-client-5.1 (from .../mysql-client-5.1_5.1.49-3_armel.deb) ...
+Selecting previously deselected package mysql-server-core-5.1.
+Unpacking mysql-server-core-5.1 (from .../mysql-server-core-5.1_5.1.49-3_armel.deb) ...
+Processing triggers for man-db ...
+Setting up mysql-common (5.1.49-3) ...
+Selecting previously deselected package mysql-server-5.1.
+(Reading database ... (Reading database ... 5%(Reading database ... 10%(Reading database ... 15%(Reading database ... 20%(Reading database ... 25%(Reading database ... 30%(Reading database ... 35%(Reading database ... 40%(Reading database ... 45%(Reading database ... 50%(Reading database ... 55%(Reading database ... 60%(Reading database ... 65%(Reading database ... 70%(Reading database ... 75%(Reading database ... 80%(Reading database ... 85%(Reading database ... 90%(Reading database ... 95%(Reading database ... 100%(Reading database ... 46601 files and directories currently installed.)
+Unpacking mysql-server-5.1 (from .../mysql-server-5.1_5.1.49-3_armel.deb) ...
+Selecting previously deselected package mysql-server.
+Unpacking mysql-server (from .../mysql-server_5.1.49-3_all.deb) ...
+Selecting previously deselected package dbconfig-common.
+Unpacking dbconfig-common (from .../dbconfig-common_1.8.46+squeeze.0_all.deb) ...
+Selecting previously deselected package dataware-mysql-python.
+Unpacking dataware-mysql-python (from .../dataware-mysql-python_1.2.4-1_armel.deb) ...
+Selecting previously deselected package dataware-energy.
+Unpacking dataware-energy (from .../dataware-energy_0.1-1_armel.deb) ...
+Processing triggers for man-db ...
+Setting up libmysqlclient16 (5.1.49-3) ...
+Setting up libdbd-mysql-perl (4.016-1) ...
+Setting up mysql-client-5.1 (5.1.49-3) ...
+Setting up mysql-server-core-5.1 (5.1.49-3) ...
+Setting up mysql-server-5.1 (5.1.49-3) ...
+Stopping MySQL database server: mysqld.
+130911  2:23:19 [Note] Plugin 'FEDERATED' is disabled.
+130911  2:23:19  InnoDB: Started; log sequence number 0 44233
+130911  2:23:19  InnoDB: Starting shutdown...
+130911  2:23:25  InnoDB: Shutdown completed; log sequence number 0 44233
+Starting MySQL database server: mysqld.
+Checking for corrupt, not cleanly closed and upgrade needing tables..
+Setting up mysql-server (5.1.49-3) ...
+Setting up dbconfig-common (1.8.46+squeeze.0) ...
+
+Creating config file /etc/dbconfig-common/config with new version
+Setting up dataware-mysql-python (1.2.4-1) ...
+Setting up dataware-energy (0.1-1) ...
+[1;24r[4l[?25l[?1c[0;10m[37m[40m[1;24r[H[J[1;1H[1m[37m[44m[K
+[K
+[K
+[K
+[K
+[K
+[K
+[K
+[K
+[K
+[K
+[K
+[K
+[K
+[K
+[K
+[K
+[K
+[K
+[K
+[K
+[K
+[K
+[K[1;1H[0;10m[37m[44mPackage configuration[3;2H[30m[47m┌──────────────────────┤ [31mConfiguring dataware-energy[30m ├──────────────────────┐[4;2H│                                                                           │[1m[37m[40m [5;2H[0;10m[30m[47m│ The dataware-energy package must have a database installed and            │[1m[37m[40m [6;2H[0;10m[30m[47m│ configured before it can be used.  This can be optionally handled with    │[1m[37m[40m [7;2H[0;10m[30m[47m│ dbconfig-common.                                                          │[1m[37m[40m [8;2H[0;10m[30m[47m│                                                                           │[1m[37m[40m [9;2H[0;10m[30m[47m│ If you are an advanced database administrator and know that you want to   │[1m[37m[40m [10;2H[0;10m[30m[47m│ perform this configuration manually, or if your database has already      │[1m[37m[40m [11;2H[0;10m[30m[47m│ been installed and configured, you should refuse this option.  Details    │[1m[37m[40m [12;2H[0;10m[30m[47m│ on what needs to be done should most likely be provided in                │[1m[37m[40m [13;2H[0;10m[30m[47m│ /usr/share/doc/dataware-energy.                                           │[1m[37m[40m [14;2H[0;10m[30m[47m│                                                                           │[1m[37m[40m [15;2H[0;10m[30m[47m│ Otherwise, you should probably choose this option.                        │[1m[37m[40m [16;2H[0;10m[30m[47m│                                                                           │[1m[37m[40m [17;2H[0;10m[30m[47m│ Configure database for dataware-energy with dbconfig-common?              │[1m[37m[40m [18;2H[0;10m[30m[47m│                                                                           │[1m[37m[40m [19;2H[0;10m[30m[47m│                    [37m[41m<Yes>[30m[47m                       <No>                       │[1m[37m[40m [20;2H[0;10m[30m[47m│                                                                           │[1m[37m[40m [21;2H[0;10m[30m[47m└───────────────────────────────────────────────────────────────────────────┘[1m[37m[40m [22;3H                                                                             [19;24H[?25h[?0c[24;1H[0;10m[37m[40m[0;10m[39;49m[K[1;24r[4l[?25l[?1c[0;10m[37m[40m[1;24r[H[J[1;1H[1m[37m[44m[K
+[K
+[K
+[K
+[K
+[K
+[K
+[K
+[K
+[K
+[K
+[K
+[K
+[K
+[K
+[K
+[K
+[K
+[K
+[K
+[K
+[K
+[K
+[K[1;1H[?25l[?1c[?25h[?0c[0;10m[37m[44mPackage configuration[7;3H[30m[47m┌─────────────────────┤ [31mConfiguring dataware-energy[30m ├─────────────────────┐[8;3H│ Please provide the password for the administrative account with which   │[1m[37m[40m [9;3H[0;10m[30m[47m│ this package should create its MySQL database and user.                 │[1m[37m[40m [10;3H[0;10m[30m[47m│                                                                         │[1m[37m[40m [11;3H[0;10m[30m[47m│ Password of the database's administrative user:                         │[1m[37m[40m [12;3H[0;10m[30m[47m│                                                                         │[1m[37m[40m [13;3H[0;10m[30m[47m│ [37m[44m_______________________________________________________________________[30m[47m │[1m[37m[40m [14;3H[0;10m[30m[47m│                                                                         │[1m[37m[40m [15;3H[0;10m[30m[47m│                   <Ok>                       <Cancel>                   │[1m[37m[40m [16;3H[0;10m[30m[47m│                                                                         │[1m[37m[40m [17;3H[0;10m[30m[47m└─────────────────────────────────────────────────────────────────────────┘[1m[37m[40m [18;4H                                                                           [13;5H[0;10m[37m[44m******[?25l[?1c[15;23H[41m<Ok>[15;24H[?25h[?0c[24;1H[40m[0;10m[39;49m[K[1;24r[4l[?25l[?1c[0;10m[37m[40m[1;24r[H[J[1;1H[1m[37m[44m[K
+[K
+[K
+[K
+[K
+[K
+[K
+[K
+[K
+[K
+[K
+[K
+[K
+[K
+[K
+[K
+[K
+[K
+[K
+[K
+[K
+[K
+[K
+[K[1;1H[?25l[?1c[?25h[?0c[0;10m[37m[44mPackage configuration[7;4H[30m[47m┌────────────────────┤ [31mConfiguring dataware-energy[30m ├─────────────────────┐[8;4H│ Please provide a password for dataware-energy to register with the     │[1m[37m[40m [9;4H[0;10m[30m[47m│ database server.  If left blank, a random password will be generated.  │[1m[37m[40m [10;4H[0;10m[30m[47m│                                                                        │[1m[37m[40m [11;4H[0;10m[30m[47m│ MySQL application password for dataware-energy:                        │[1m[37m[40m [12;4H[0;10m[30m[47m│                                                                        │[1m[37m[40m [13;4H[0;10m[30m[47m│ [37m[44m______________________________________________________________________[30m[47m │[1m[37m[40m [14;4H[0;10m[30m[47m│                                                                        │[1m[37m[40m [15;4H[0;10m[30m[47m│                   <Ok>                       <Cancel>                  │[1m[37m[40m [16;4H[0;10m[30m[47m│                                                                        │[1m[37m[40m [17;4H[0;10m[30m[47m└────────────────────────────────────────────────────────────────────────┘[1m[37m[40m [18;5H                                                                          [13;6H[0;10m[37m[44m********[?25l[?1c[15;24H[41m<Ok>[15;25H[?25h[?0c[24;1H[40m[0;10m[39;49m[K[1;24r[4l[?25l[?1c[0;10m[37m[40m[1;24r[H[J[1;1H[1m[37m[44m[K
+[K
+[K
+[K
+[K
+[K
+[K
+[K
+[K
+[K
+[K
+[K
+[K
+[K
+[K
+[K
+[K
+[K
+[K
+[K
+[K
+[K
+[K
+[K[1;1H[?25l[?1c[?25h[?0c[0;10m[37m[44mPackage configuration[8;20H[30m[47m┌────┤ [31mConfiguring dataware-energy[30m ├─────┐[9;20H│                                        │[1m[37m[40m [10;20H[0;10m[30m[47m│                                        │[1m[37m[40m [11;20H[0;10m[30m[47m│ Password confirmation:                 │[1m[37m[40m [12;20H[0;10m[30m[47m│                                        │[1m[37m[40m [13;20H[0;10m[30m[47m│ [37m[44m______________________________________[30m[47m │[1m[37m[40m [14;20H[0;10m[30m[47m│                                        │[1m[37m[40m [15;20H[0;10m[30m[47m│        <Ok>            <Cancel>        │[1m[37m[40m [16;20H[0;10m[30m[47m│                                        │[1m[37m[40m [17;20H[0;10m[30m[47m└────────────────────────────────────────┘[1m[37m[40m [18;21H                                          [13;22H[0;10m[37m[44m********[?25l[?1c[15;29H[41m<Ok>[15;30H[?25h[?0c[24;1H[40m[0;10m[39;49m[Kdbconfig-common: writing config to /etc/dbconfig-common/dataware-energy.conf
+
+Creating config file /etc/dbconfig-common/dataware-energy.conf with new version
+
+Creating config file /etc/dataware/energy_config.cfg with new version
+granting access to database datawareenergy for dataware-energy@localhost: success.
+verifying access for dataware-energy@localhost: success.
+creating database datawareenergy: success.
+verifying database datawareenergy exists: success.
+populating database via sql...  done.
+dbconfig-common: flushing administrative password
+Processing triggers for python-support ...

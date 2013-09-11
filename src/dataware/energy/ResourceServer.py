@@ -27,6 +27,8 @@ import signal
 # SETUP LOGGING FOR THIS MODULE
 #//////////////////////////////////////////////////////////
 
+
+pqueue = JoinableQueue()
 pid = str(os.getpid())
 print "pid is %s" % pid
 
@@ -314,7 +316,7 @@ def test_query():
 @route( "/static/:filename" )
 def user_get_static_file( filename ):
     
-    return static_file( filename, root='static/' )
+    return static_file( filename, root='%s/static/' % ROOT_PATH )
 
 
 
@@ -322,7 +324,7 @@ def user_get_static_file( filename ):
 
 def user_get_static_file( path ):
    
-    return static_file( path, root='static/' )
+    return static_file( path, root='%s/static/' % ROOT_PATH )
 
 
 
@@ -856,9 +858,8 @@ def worker():
 
 def main():
     
-    print "config file: %s" % sys.argv[1];
-    
-    configfile = sys.argv[1]
+ 
+   
     
     #-------------------------------
     # setup logging
@@ -888,26 +889,6 @@ def main():
     # as a daemon (due to print statements in python socket libraries.
     sys.stdout = std_writer( "stdout" )
     sys.stderr = std_writer( "stderr" )
-    
-    #-------------------------------
-    # constants
-    #-------------------------------
-    Config = ConfigParser.ConfigParser()
-    Config.read(configfile)
-    
-    EXTENSION_COOKIE = "dataware_logged_in"
-    PORT = Config.get("DatawareResource", "port")
-    HOST = "0.0.0.0"  
-    BOTTLE_QUIET = True 
-    ROOT_PAGE = "/"
-    RESOURCE_NAME   = Config.get("DatawareResource", "resource_name")
-  
-    RESOURCES       = json.loads(Config.get("Resources", "resources"))
-    RESOURCE_URI    = "%s:%s" % (Config.get("DatawareResource", "resource_uri"), PORT) 
-    REALM           = "%s:%s" % (Config.get("DatawareResource", "realm"), PORT)   
-    #WEB_PROXY = "http://aproxy:port"
-    CATALOG_URI     = Config.get("Catalog", "catalog_uri")
-    
     
     
     #-------------------------------
@@ -975,7 +956,33 @@ def main():
     #---------------------------------
     log.info("-"*40)
 
-pqueue = JoinableQueue()
 
+
+#-------------------------------
+# constants
+#-------------------------------
+
+configfile = sys.argv[1]
+Config = ConfigParser.ConfigParser()
+Config.read(configfile)
+
+ROOT_PATH = '/var/dataware/energy'
+EXTENSION_COOKIE = "dataware_logged_in"
+PORT = Config.get("DatawareResource", "port")
+HOST = "0.0.0.0"  
+BOTTLE_QUIET = True 
+ROOT_PAGE = "/"
+RESOURCE_NAME   = Config.get("DatawareResource", "resource_name")
+
+RESOURCES       = json.loads(Config.get("Resources", "resources"))
+RESOURCE_URI    = "%s:%s" % (Config.get("DatawareResource", "resource_uri"), PORT) 
+REALM           = "%s:%s" % (Config.get("DatawareResource", "realm"), PORT)   
+#WEB_PROXY      = "http://aproxy:port"
+
+CATALOG_URI     = Config.get("Catalog", "catalog_uri")
+#Setup where bottle serves its template files
+
+TEMPLATE_PATH.insert(0, '%s/views' % ROOT_PATH)  
+    
 if __name__ == '__main__':
     main()

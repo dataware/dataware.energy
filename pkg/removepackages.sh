@@ -1,10 +1,14 @@
 #!/bin/sh
-apt-get remove --purge dataware-energy dataware-resource
-apt-get remove --purge dbconfig-common mysql-common mysql-server-5.1 mysql-client-5.1 mysql-server-core-5.1
+apt-get -y remove --purge dataware-energy dataware-resource
+apt-get -y remove --purge dbconfig-common mysql-common mysql-server-5.1 mysql-client-5.1 mysql-server-core-5.1
 rm -rf /usr/share/pyshared/dataware
 rm -rf /etc/dataware
 rm -rf /etc/mysql
 rm -rf /var/lib/mysql
 rm -rf /etc/dbconfig-common
 rm -rf /usr/share/dbconfig-common
-apt-get autoremove
+rm -rf /tmp/dbconfig-generate-include*
+rm -rf /var/log/dbconfig-common
+apt-get -y --purge autoremove
+ucf --purge /etc/dbconfig-common/dataware-energy.conf
+ucf --purge /etc/dataware/energy_config.cfg
