@@ -860,7 +860,8 @@ def main():
     
  
    
-    
+    global datadb, resourcedb
+    global um,pm,im  
     #-------------------------------
     # setup logging
     #-------------------------------
@@ -966,7 +967,7 @@ configfile = sys.argv[1]
 Config = ConfigParser.ConfigParser()
 Config.read(configfile)
 
-ROOT_PATH = '/var/dataware/energy'
+ROOT_PATH = Config.get("DatawareResource", "root_path") 
 EXTENSION_COOKIE = "dataware_logged_in"
 PORT = Config.get("DatawareResource", "port")
 HOST = "0.0.0.0"  
