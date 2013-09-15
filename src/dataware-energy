@@ -1,5 +1,0 @@
-#!/usr/bin/python
-import sys
-sys.path.append('/usr/share/pyshared/dataware')
-from dataware.energy import ResourceServer 
-ResourceServer.main()

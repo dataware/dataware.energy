@@ -1,0 +1,216 @@
+running sdist_dsc
+running egg_info
+writing dataware_energy.egg-info/PKG-INFO
+writing top-level names to dataware_energy.egg-info/top_level.txt
+writing dependency_links to dataware_energy.egg-info/dependency_links.txt
+reading manifest file 'dataware_energy.egg-info/SOURCES.txt'
+writing manifest file 'dataware_energy.egg-info/SOURCES.txt'
+dpkg-source: info: using source format `1.0'
+dpkg-source: info: building dataware-energy using existing dataware-energy_0.1.orig.tar.gz
+dpkg-source: info: building dataware-energy in dataware-energy_0.1-1.diff.gz
+dpkg-source: info: building dataware-energy in dataware-energy_0.1-1.dsc
+dpkg-source: info: extracting dataware-energy in dataware-energy-0.1
+dpkg-source: info: unpacking dataware-energy_0.1.orig.tar.gz
+dpkg-source: info: applying dataware-energy_0.1-1.diff.gz
+dpkg-buildpackage: export CFLAGS from dpkg-buildflags (origin: vendor): -g -O2
+dpkg-buildpackage: export CPPFLAGS from dpkg-buildflags (origin: vendor): 
+dpkg-buildpackage: export CXXFLAGS from dpkg-buildflags (origin: vendor): -g -O2
+dpkg-buildpackage: export FFLAGS from dpkg-buildflags (origin: vendor): -g -O2
+dpkg-buildpackage: export LDFLAGS from dpkg-buildflags (origin: vendor): 
+dpkg-buildpackage: source package dataware-energy
+dpkg-buildpackage: source version 0.1-1
+dpkg-buildpackage: source changed by unknown <unknown@unknown>
+dpkg-buildpackage: host architecture armel
+dh_installdirs
+cp mysql.sql debian/dataware-energy/usr/share/dbconfig-common/data/dataware-energy/install/mysql
+dh clean
+   dh_testdir
+   dh_auto_clean
+running clean
+'build/lib' does not exist -- can't clean it
+'build/bdist.linux-armv5tel' does not exist -- can't clean it
+'build/scripts-2.5' does not exist -- can't clean it
+running clean
+'build/lib.linux-armv5tel-2.6' does not exist -- can't clean it
+'build/bdist.linux-armv5tel' does not exist -- can't clean it
+'build/scripts-2.6' does not exist -- can't clean it
+   dh_clean
+dpkg-source: info: using source format `1.0'
+dpkg-source: info: building dataware-energy using existing dataware-energy_0.1.orig.tar.gz
+dpkg-source: info: building dataware-energy in dataware-energy_0.1-1.diff.gz
+dpkg-source: info: use the '3.0 (quilt)' format to have separate and documented changes to upstream files, see dpkg-source(1)
+dpkg-source: info: building dataware-energy in dataware-energy_0.1-1.dsc
+dh_installdirs
+cp mysql.sql debian/dataware-energy/usr/share/dbconfig-common/data/dataware-energy/install/mysql
+dh build
+   dh_testdir
+   dh_auto_configure
+   dh_auto_build
+running build
+running build_py
+creating build
+creating build/lib
+creating build/lib/dataware-energy
+copying dataware-energy/InstallationModule.py -> build/lib/dataware-energy
+copying dataware-energy/ResourceDB.py -> build/lib/dataware-energy
+copying dataware-energy/EnergyDB.py -> build/lib/dataware-energy
+copying dataware-energy/ProcessingModule.py -> build/lib/dataware-energy
+copying dataware-energy/ResourceServer.py -> build/lib/dataware-energy
+copying dataware-energy/DatawareDB.py -> build/lib/dataware-energy
+copying dataware-energy/SqlParser.py -> build/lib/dataware-energy
+copying dataware-energy/OpenIDManager.py -> build/lib/dataware-energy
+copying dataware-energy/__init__.py -> build/lib/dataware-energy
+copying dataware-energy/UpdateManager.py -> build/lib/dataware-energy
+running egg_info
+writing dataware_energy.egg-info/PKG-INFO
+writing top-level names to dataware_energy.egg-info/top_level.txt
+writing dependency_links to dataware_energy.egg-info/dependency_links.txt
+reading manifest file 'dataware_energy.egg-info/SOURCES.txt'
+writing manifest file 'dataware_energy.egg-info/SOURCES.txt'
+running build_scripts
+creating build/scripts-2.5
+copying and adjusting dataware_energy -> build/scripts-2.5
+copying currentcost-monitor -> build/scripts-2.5
+copying currentcost-stop -> build/scripts-2.5
+changing mode of build/scripts-2.5/dataware_energy from 644 to 755
+running build
+running build_py
+creating build/lib.linux-armv5tel-2.6
+creating build/lib.linux-armv5tel-2.6/dataware-energy
+copying dataware-energy/InstallationModule.py -> build/lib.linux-armv5tel-2.6/dataware-energy
+copying dataware-energy/ResourceDB.py -> build/lib.linux-armv5tel-2.6/dataware-energy
+copying dataware-energy/EnergyDB.py -> build/lib.linux-armv5tel-2.6/dataware-energy
+copying dataware-energy/ProcessingModule.py -> build/lib.linux-armv5tel-2.6/dataware-energy
+copying dataware-energy/ResourceServer.py -> build/lib.linux-armv5tel-2.6/dataware-energy
+copying dataware-energy/DatawareDB.py -> build/lib.linux-armv5tel-2.6/dataware-energy
+copying dataware-energy/SqlParser.py -> build/lib.linux-armv5tel-2.6/dataware-energy
+copying dataware-energy/OpenIDManager.py -> build/lib.linux-armv5tel-2.6/dataware-energy
+copying dataware-energy/__init__.py -> build/lib.linux-armv5tel-2.6/dataware-energy
+copying dataware-energy/UpdateManager.py -> build/lib.linux-armv5tel-2.6/dataware-energy
+running egg_info
+writing dataware_energy.egg-info/PKG-INFO
+writing top-level names to dataware_energy.egg-info/top_level.txt
+writing dependency_links to dataware_energy.egg-info/dependency_links.txt
+reading manifest file 'dataware_energy.egg-info/SOURCES.txt'
+writing manifest file 'dataware_energy.egg-info/SOURCES.txt'
+running build_scripts
+creating build/scripts-2.6
+copying and adjusting dataware_energy -> build/scripts-2.6
+copying currentcost-monitor -> build/scripts-2.6
+copying currentcost-stop -> build/scripts-2.6
+changing mode of build/scripts-2.6/dataware_energy from 644 to 755
+   dh_auto_test
+dh_installdirs
+cp mysql.sql debian/dataware-energy/usr/share/dbconfig-common/data/dataware-energy/install/mysql
+dh binary
+   dh_auto_install
+running install
+running build
+running build_py
+running egg_info
+writing dataware_energy.egg-info/PKG-INFO
+writing top-level names to dataware_energy.egg-info/top_level.txt
+writing dependency_links to dataware_energy.egg-info/dependency_links.txt
+reading manifest file 'dataware_energy.egg-info/SOURCES.txt'
+writing manifest file 'dataware_energy.egg-info/SOURCES.txt'
+running build_scripts
+running install_lib
+creating /root/dataware.energy/src/deb_dist/dataware-energy-0.1/debian/dataware-energy/usr/lib
+creating /root/dataware.energy/src/deb_dist/dataware-energy-0.1/debian/dataware-energy/usr/lib/python2.5
+creating /root/dataware.energy/src/deb_dist/dataware-energy-0.1/debian/dataware-energy/usr/lib/python2.5/site-packages
+creating /root/dataware.energy/src/deb_dist/dataware-energy-0.1/debian/dataware-energy/usr/lib/python2.5/site-packages/dataware-energy
+copying build/lib/dataware-energy/InstallationModule.py -> /root/dataware.energy/src/deb_dist/dataware-energy-0.1/debian/dataware-energy/usr/lib/python2.5/site-packages/dataware-energy
+copying build/lib/dataware-energy/ResourceDB.py -> /root/dataware.energy/src/deb_dist/dataware-energy-0.1/debian/dataware-energy/usr/lib/python2.5/site-packages/dataware-energy
+copying build/lib/dataware-energy/EnergyDB.py -> /root/dataware.energy/src/deb_dist/dataware-energy-0.1/debian/dataware-energy/usr/lib/python2.5/site-packages/dataware-energy
+copying build/lib/dataware-energy/ProcessingModule.py -> /root/dataware.energy/src/deb_dist/dataware-energy-0.1/debian/dataware-energy/usr/lib/python2.5/site-packages/dataware-energy
+copying build/lib/dataware-energy/ResourceServer.py -> /root/dataware.energy/src/deb_dist/dataware-energy-0.1/debian/dataware-energy/usr/lib/python2.5/site-packages/dataware-energy
+copying build/lib/dataware-energy/DatawareDB.py -> /root/dataware.energy/src/deb_dist/dataware-energy-0.1/debian/dataware-energy/usr/lib/python2.5/site-packages/dataware-energy
+copying build/lib/dataware-energy/SqlParser.py -> /root/dataware.energy/src/deb_dist/dataware-energy-0.1/debian/dataware-energy/usr/lib/python2.5/site-packages/dataware-energy
+copying build/lib/dataware-energy/OpenIDManager.py -> /root/dataware.energy/src/deb_dist/dataware-energy-0.1/debian/dataware-energy/usr/lib/python2.5/site-packages/dataware-energy
+copying build/lib/dataware-energy/__init__.py -> /root/dataware.energy/src/deb_dist/dataware-energy-0.1/debian/dataware-energy/usr/lib/python2.5/site-packages/dataware-energy
+copying build/lib/dataware-energy/UpdateManager.py -> /root/dataware.energy/src/deb_dist/dataware-energy-0.1/debian/dataware-energy/usr/lib/python2.5/site-packages/dataware-energy
+running install_egg_info
+Copying dataware_energy.egg-info to /root/dataware.energy/src/deb_dist/dataware-energy-0.1/debian/dataware-energy/usr/lib/python2.5/site-packages/dataware_energy-0.1.egg-info
+running install_scripts
+creating /root/dataware.energy/src/deb_dist/dataware-energy-0.1/debian/dataware-energy/usr/bin
+copying build/scripts-2.5/currentcost-monitor -> /root/dataware.energy/src/deb_dist/dataware-energy-0.1/debian/dataware-energy/usr/bin
+copying build/scripts-2.5/dataware_energy -> /root/dataware.energy/src/deb_dist/dataware-energy-0.1/debian/dataware-energy/usr/bin
+copying build/scripts-2.5/currentcost-stop -> /root/dataware.energy/src/deb_dist/dataware-energy-0.1/debian/dataware-energy/usr/bin
+changing mode of /root/dataware.energy/src/deb_dist/dataware-energy-0.1/debian/dataware-energy/usr/bin/currentcost-monitor to 755
+changing mode of /root/dataware.energy/src/deb_dist/dataware-energy-0.1/debian/dataware-energy/usr/bin/dataware_energy to 755
+changing mode of /root/dataware.energy/src/deb_dist/dataware-energy-0.1/debian/dataware-energy/usr/bin/currentcost-stop to 755
+running install
+running build
+running build_py
+running egg_info
+writing dataware_energy.egg-info/PKG-INFO
+writing top-level names to dataware_energy.egg-info/top_level.txt
+writing dependency_links to dataware_energy.egg-info/dependency_links.txt
+reading manifest file 'dataware_energy.egg-info/SOURCES.txt'
+writing manifest file 'dataware_energy.egg-info/SOURCES.txt'
+running build_scripts
+running install_lib
+creating /root/dataware.energy/src/deb_dist/dataware-energy-0.1/debian/dataware-energy/usr/lib/python2.6
+creating /root/dataware.energy/src/deb_dist/dataware-energy-0.1/debian/dataware-energy/usr/lib/python2.6/dist-packages
+creating /root/dataware.energy/src/deb_dist/dataware-energy-0.1/debian/dataware-energy/usr/lib/python2.6/dist-packages/dataware-energy
+copying build/lib.linux-armv5tel-2.6/dataware-energy/InstallationModule.py -> /root/dataware.energy/src/deb_dist/dataware-energy-0.1/debian/dataware-energy/usr/lib/python2.6/dist-packages/dataware-energy
+copying build/lib.linux-armv5tel-2.6/dataware-energy/ResourceDB.py -> /root/dataware.energy/src/deb_dist/dataware-energy-0.1/debian/dataware-energy/usr/lib/python2.6/dist-packages/dataware-energy
+copying build/lib.linux-armv5tel-2.6/dataware-energy/EnergyDB.py -> /root/dataware.energy/src/deb_dist/dataware-energy-0.1/debian/dataware-energy/usr/lib/python2.6/dist-packages/dataware-energy
+copying build/lib.linux-armv5tel-2.6/dataware-energy/ProcessingModule.py -> /root/dataware.energy/src/deb_dist/dataware-energy-0.1/debian/dataware-energy/usr/lib/python2.6/dist-packages/dataware-energy
+copying build/lib.linux-armv5tel-2.6/dataware-energy/ResourceServer.py -> /root/dataware.energy/src/deb_dist/dataware-energy-0.1/debian/dataware-energy/usr/lib/python2.6/dist-packages/dataware-energy
+copying build/lib.linux-armv5tel-2.6/dataware-energy/DatawareDB.py -> /root/dataware.energy/src/deb_dist/dataware-energy-0.1/debian/dataware-energy/usr/lib/python2.6/dist-packages/dataware-energy
+copying build/lib.linux-armv5tel-2.6/dataware-energy/SqlParser.py -> /root/dataware.energy/src/deb_dist/dataware-energy-0.1/debian/dataware-energy/usr/lib/python2.6/dist-packages/dataware-energy
+copying build/lib.linux-armv5tel-2.6/dataware-energy/OpenIDManager.py -> /root/dataware.energy/src/deb_dist/dataware-energy-0.1/debian/dataware-energy/usr/lib/python2.6/dist-packages/dataware-energy
+copying build/lib.linux-armv5tel-2.6/dataware-energy/__init__.py -> /root/dataware.energy/src/deb_dist/dataware-energy-0.1/debian/dataware-energy/usr/lib/python2.6/dist-packages/dataware-energy
+copying build/lib.linux-armv5tel-2.6/dataware-energy/UpdateManager.py -> /root/dataware.energy/src/deb_dist/dataware-energy-0.1/debian/dataware-energy/usr/lib/python2.6/dist-packages/dataware-energy
+running install_egg_info
+Copying dataware_energy.egg-info to /root/dataware.energy/src/deb_dist/dataware-energy-0.1/debian/dataware-energy/usr/lib/python2.6/dist-packages/dataware_energy-0.1-py2.6.egg-info
+running install_scripts
+copying build/scripts-2.6/currentcost-monitor -> /root/dataware.energy/src/deb_dist/dataware-energy-0.1/debian/dataware-energy/usr/bin
+copying build/scripts-2.6/dataware_energy -> /root/dataware.energy/src/deb_dist/dataware-energy-0.1/debian/dataware-energy/usr/bin
+copying build/scripts-2.6/currentcost-stop -> /root/dataware.energy/src/deb_dist/dataware-energy-0.1/debian/dataware-energy/usr/bin
+changing mode of /root/dataware.energy/src/deb_dist/dataware-energy-0.1/debian/dataware-energy/usr/bin/currentcost-monitor to 755
+changing mode of /root/dataware.energy/src/deb_dist/dataware-energy-0.1/debian/dataware-energy/usr/bin/dataware_energy to 755
+changing mode of /root/dataware.energy/src/deb_dist/dataware-energy-0.1/debian/dataware-energy/usr/bin/currentcost-stop to 755
+   dh_install
+   dh_installdocs
+   dh_installchangelogs
+   dh_installexamples
+   dh_installman
+   dh_installcatalogs
+   dh_installcron
+   dh_installdebconf
+   dh_installemacsen
+   dh_installifupdown
+   dh_installinfo
+   dh_pysupport
+   dh_installinit
+   dh_installmenu
+   dh_installmime
+   dh_installmodules
+   dh_installlogcheck
+   dh_installlogrotate
+   dh_installpam
+   dh_installppp
+   dh_installudev
+   dh_installwm
+   dh_installxfonts
+   dh_bugfiles
+   dh_lintian
+   dh_gconf
+   dh_icons
+   dh_perl
+   dh_usrlocal
+   dh_link
+   dh_compress
+   dh_fixperms
+   dh_strip
+   dh_makeshlibs
+   dh_shlibdeps
+   dh_installdeb
+   dh_gencontrol
+   dh_md5sums
+   dh_builddeb
+dpkg-deb: building package `dataware-energy' in `../dataware-energy_0.1-1_armel.deb'.
+dpkg-buildpackage: full upload (original source is included)
+dpkg-deb: building package `dataware-energy' in `dataware-energy.deb'.
