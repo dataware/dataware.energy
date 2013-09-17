@@ -838,7 +838,6 @@ def worker():
             )
            
             if not(result is None):
-            
                 url = request['result_url']
                 data = urllib.urlencode(json.loads(result))
                 req = urllib2.Request(url,data)
@@ -847,8 +846,8 @@ def worker():
                 f.close()
         
         except Exception, e:   
-            print "Exception! - error returning results"
-            
+            log.error("Exception! - error returning results")
+            log.error(e) 
         finally:
             pqueue.task_done()
             
