@@ -4,6 +4,9 @@
 # C extensions
 *.so
 
+#swp files
+*.swp
+
 # Packages
 *.egg
 *.egg-info

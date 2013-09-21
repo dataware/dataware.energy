@@ -15,6 +15,7 @@ import java.util.Scanner;
 import java.util.TooManyListenersException;
 
 import java.util.Date;
+import java.util.Stack;
 import java.text.SimpleDateFormat;
 
 import java.sql.Connection;
@@ -36,6 +37,7 @@ public class Monitor implements Runnable, SerialPortEventListener{
 	Thread						readThread;
     Connection                  connection;
     SimpleDateFormat format      = new SimpleDateFormat("yyyy/MM/dd:HH:mm:ss"); 
+    String url, user, password;
 
 	public static void main(String[] args)
 	{
@@ -79,16 +81,15 @@ public class Monitor implements Runnable, SerialPortEventListener{
 		{
 		    
 		    //read in config file
-			String url = "", user ="", password="";
 			
 			try{
 			    Wini ini = new Wini(new File(iniFile));
 			    String hostname = ini.get("ResourceDB","hostname");
 			    String db 	= ini.get("ResourceDB", "dbname");
-	          	    user   = ini.get("ResourceDB", "username");
+	          	user   = ini.get("ResourceDB", "username");
 			    password  = ini.get("ResourceDB", "password");
-	            	    url = "jdbc:mysql://" + hostname + ":3306/" + db;
-	            	    System.out.println(url);
+	            url = "jdbc:mysql://" + hostname + ":3306/" + db;
+	            System.out.println(url);
 			}catch(Exception e){
 			    e.printStackTrace();
 			    System.exit(-1);
@@ -130,8 +131,14 @@ public class Monitor implements Runnable, SerialPortEventListener{
 
 	}
 
+    public void insertCached(){
+        
+        
+    }
+    
 	public void serialEvent(SerialPortEvent event)
 	{
+	    
 		switch (event.getEventType())
 		{
 
@@ -156,8 +163,9 @@ public class Monitor implements Runnable, SerialPortEventListener{
 
 			case SerialPortEvent.DATA_AVAILABLE:
 				
-				System.out.println("starting input scanner");
 				Statement statement = null;
+				Stack<String> cache = new Stack<String>();
+				int index = 0;
 				
 				try{
 				    statement = connection.createStatement();
@@ -183,27 +191,43 @@ public class Monitor implements Runnable, SerialPortEventListener{
 					{
 						if(parsableLine.contains("msg"))
 						{
+						    String stmt = "";
+						    
 							try
-							{
-							    
+							{ 
 							    String ts = format.format(new Date()); 
 								int sensorId = Integer.parseInt(parseSingleElement(parsableLine, "id"));
 								double value = Double.parseDouble(parseSingleElement(parsableLine, "watts"));
 								
-								if (value > 0){
+								if (value > 0){	    
 								    
-								    String stmt = String.format("insert into energy_data values(\"%s\", '%d', '%f')", ts, sensorId, value);
+								    stmt = String.format("insert into energy_data values(\"%s\", '%d', '%f');", ts, sensorId, value);
+								    statement.executeUpdate(stmt);  
+								}
+								
+								//add any failed inserts.
+								while (!cache.empty()){
+								    stmt = cache.pop();
+								    System.err.println(stmt);
 								    statement.executeUpdate(stmt);  
 								}
 							}
 							catch(SQLException se){
-							    se.printStackTrace();
+							    cache.push(stmt);  
+							    try{
+							        System.err.println("attempting reconnect");
+                            		connection = DriverManager.getConnection(url, user, password);
+                            		statement = connection.createStatement();
+                        		}catch(Exception e){
+								    System.err.println(e.getMessage());
+                        		}
 							}
 							catch (NumberFormatException n)
 							{
 								n.printStackTrace();
 							}
 							catch (Exception e){
+							  
 							    System.err.println(e.getMessage());
 							    e.printStackTrace();
 							}
