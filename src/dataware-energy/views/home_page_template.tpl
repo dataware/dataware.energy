@@ -12,17 +12,17 @@ $(function(){
 <div class="container">
 
     <div class="well">
-        <h1>Welcome to the resource manager.<small> Browse and manage your data resources </small></h1>
+        <h1>Welcome to your energy dataware resource.<small> Browse and manage your energy usage </small></h1>
     </div>
     
     %if user:
     <div class="mydata">     
       
-		<ul class="nav nav-pills" data-bind="foreach:resources">
+		<!--<ul class="nav nav-pills" data-bind="foreach:resources">
             <li data-bind="css:{active: $parent.selectedResource().resource_name() == resource_name()}">
                 <a data-bind="attr:{href: '#' + resource_name()}, click:function(){$parent.selectedResource($data);}, text:resource_name"></a>
             </li>
-        </ul>
+        </ul>-->
     
         <div class="row">
             <div class="span8">

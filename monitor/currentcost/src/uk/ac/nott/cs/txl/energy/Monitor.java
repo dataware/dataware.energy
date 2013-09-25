@@ -16,6 +16,7 @@ import java.util.TooManyListenersException;
 
 import java.util.Date;
 import java.util.Stack;
+import java.util.TimeZone;
 import java.text.SimpleDateFormat;
 
 import java.sql.Connection;
@@ -36,12 +37,15 @@ public class Monitor implements Runnable, SerialPortEventListener{
 	SerialPort					serialPort;
 	Thread						readThread;
     Connection                  connection;
-    SimpleDateFormat format      = new SimpleDateFormat("yyyy/MM/dd:HH:mm:ss"); 
+    SimpleDateFormat format      = new SimpleDateFormat("yyyy/MM/dd:HH:mm:ss");
+       
+    
     String url, user, password;
 
 	public static void main(String[] args)
 	{
 		boolean portFound = false;
+	   
 		String defaultPort = "/dev/tty.usbserial";
 		String iniFile = "/etc/dataware/energy_config.cfg";
 		if (args.length >= 1)
@@ -90,6 +94,8 @@ public class Monitor implements Runnable, SerialPortEventListener{
 			    password  = ini.get("ResourceDB", "password");
 	            url = "jdbc:mysql://" + hostname + ":3306/" + db;
 	            System.out.println(url);
+	            System.out.println(new Date().toString());
+	            System.out.println(format.format(new Date()));
 			}catch(Exception e){
 			    e.printStackTrace();
 			    System.exit(-1);

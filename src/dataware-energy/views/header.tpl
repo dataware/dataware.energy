@@ -2,16 +2,20 @@
 <head>
 <title>My dataware resources</title>
 
-<link rel="stylesheet" type="text/css" href="./static/bootstrap/css/bootstrap.min.css" /> 
+<link rel="stylesheet" type="text/css" href="./static/bootstrap-3.0.0/dist/css/bootstrap.min.css" /> 
+<link rel="stylesheet" type="text/css" href="./static/css/xcharts.min.css" /> 
 <script type="text/javascript" src="./static/jquery/jquery-1.8.2.min.js"></script>
 <script type="text/javascript" src="./static/jquery/jquery-ui-1.8.23.min.js"></script>
 <script type="text/javascript" src="./static/knockout/knockout-2.1.0.js"></script>
 <script type="text/javascript" src="./static/knockout/knockout-postbox.min.js"></script>
 <script type="text/javascript" src="./static/knockout/knockout-mapping.js"></script>
-<script type="text/javascript" src="./static/bootstrap/js/bootstrap.min.js"></script>
+<script type="text/javascript" src="./static/bootstrap-3.0.0/dist/js/bootstrap.min.js"></script>
 <script type="text/javascript" src="./static/bootstrap/js/bootstrap-notify.js"></script>
 <script type="text/javascript" src="http://www.google.com/jsapi"></script>
 
+<style>
+body { padding-top: 70px; }
+</style>
 
 <script>
     var NotificationModel = function(){
@@ -194,10 +198,10 @@
 </head>
 
 <body>
-<div class="navbar">
+<nav class="navbar navbar-inverse navbar-fixed-top" role="navigation"">
     <div class="navbar-inner">
-        <a class="brand" href="#">My dataware resources</a>
-        <ul class="nav">
+        <a class="navbar-brand" href="#">My dataware resources</a>
+        <ul class="nav navbar-nav">
             <li><a href="#" class="menu_button" id="home">home</a></li>
             
             %if user:
@@ -223,7 +227,7 @@
             </li>                  
         </ul>
     </div>
-</div>
+</nav>
 
 <div class="container">
     <div class="row">

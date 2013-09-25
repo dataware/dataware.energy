@@ -32,7 +32,7 @@
 
 	<div style="margin:25px auto; padding:15px; border:1px dotted #cccccc; width:400px; height:240px;">
 		<div> 
-			<img src="./static/pslogofull.png" width="220px"/>
+			<img src="./static/img/pslogofull.png" width="220px"/>
 		</div>
 		<div style="text-align:left; font-style:italic; font-family:georgia; font-size:12px; color: #888888; margin:10px 0px 18px 7px;">
 			This seems to be the first time you have logged in. To activate your account

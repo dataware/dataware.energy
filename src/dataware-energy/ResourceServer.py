@@ -770,7 +770,9 @@ def home( ):
     
     print json.dumps(resources)
     
-    return template( 'home_page_template', user=user, resources=json.dumps(resources), installs=installs, data=resourcedb.fetch_summary(), template_name="energy_data");
+    summary = resourcedb.fetch_summary()
+    
+    return template( 'home_page_template', user=user, resources=json.dumps(resources), installs=installs, data=json.dumps(summary),  template_name="energy_data");
  
 @route('/summary')
 def summary():
@@ -785,7 +787,7 @@ def summary():
         redirect( "/login" ) 
         
     data = resourcedb.fetch_summary()    
-            
+         
     return json.dumps(data)
     
 @route('/generate_fake_data')

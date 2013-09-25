@@ -26,7 +26,7 @@
 		
 		<div class="table_category">
 			<div class="table_image">
-				<img src="./static/icon_person.png">
+				<img src="./static/img/icon_person.png">
 			</div>
 			<div class="table_content" >
 				<div class="table_item">
@@ -46,7 +46,7 @@
 
 		<div class="table_category">
 			<div class="table_image">
-				<img src="./static/icon_distill.png" style="width:50px">
+				<img src="./static/img/icon_distill.png" style="width:50px">
 			</div>
 			<div class="table_content" >
 					<div class="table_item">
@@ -68,7 +68,7 @@
 
 		<div class="table_category">
 			<div class="table_image">
-				<img src="./static/icon_cogs.png">
+				<img src="./static/img/icon_cogs.png">
 				</div>
 			<div class="table_content" >
 
