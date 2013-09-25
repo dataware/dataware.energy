@@ -1,0 +1,31 @@
+#! /bin/sh
+# /etc/init.d/dataware-energy
+#
+
+PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
+DAEMON=/usr/bin/dataware_energy
+NAME=dataware_energy
+DESC="dataware energy resource"
+ENERGY_OPTS="/etc/dataware/energy_config.cfg" # Additional options given to the server
+
+# Carry out specific functions when asked to by the system
+case "$1" in
+  start)
+    echo -n "Starting $DESC: "
+    start-stop-daemon --start --verbose --background -m --pidfile /var/run/$NAME.pid --oknodo --exec $DAEMON -- $ENERGY_OPTS 
+    echo "$NAME."
+    ;;
+
+  stop)
+    echo -n "Stopping $DESC: "
+    start-stop-daemon --stop --verbose --pidfile /var/run/$NAME.pid
+    echo "$NAME."
+    ;;
+  
+  *)
+    echo "Usage: /etc/init.d/blah {start|stop}"
+    exit 1
+    ;;
+esac
+
+exit 0
