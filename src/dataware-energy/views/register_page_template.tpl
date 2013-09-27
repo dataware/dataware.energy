@@ -20,8 +20,6 @@
 ------------------------------------------------------------------>
 
 <div class="sub_header">
-	<div class="page-name">REGISTRATION</div>
-	<div class="page-description">WE JUST NEED A COUPLE MORE DETAILS...</div>
 </div>
 
 
@@ -30,11 +28,11 @@
 ------------------------------------------------------------------>
 <div class="main">
 
-	<div style="margin:25px auto; padding:15px; border:1px dotted #cccccc; width:400px; height:240px;">
+	<div style="margin:25px auto; padding:15px; width:400px; height:240px;">
 		<div> 
 			<img src="./static/img/pslogofull.png" width="220px"/>
 		</div>
-		<div style="text-align:left; font-style:italic; font-family:georgia; font-size:12px; color: #888888; margin:10px 0px 18px 7px;">
+		<div style="text-align:left; margin:10px 0px 18px 7px;">
 			This seems to be the first time you have logged in. To activate your account
 			please pick a user name, and register an email address:
 		</div>
@@ -61,7 +59,7 @@
 				</div>
 			</div>
 				
-			<input type="submit" value="Register >>" style="margin-top:60px; float:bottom; " />
+			<input type="submit" class="btn btn-primary"  value="Register >>" style="margin-top:60px; float:bottom; " />
 			
 			<input type="hidden" name="submission" value="True" />
 		</form>

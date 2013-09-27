@@ -20,7 +20,6 @@
 ------------------------------------------------------------------>
 
 <div class="sub_header">
-	<div class="page-name">LOGIN</div>
 </div>
 
 
@@ -29,11 +28,11 @@
 ------------------------------------------------------------------>
 <div class="main">
 
-	<div style="margin:25px auto; padding:15px; border:1px dotted #cccccc; width:230px;">
+	<div style="margin:25px auto; padding:15px; width:230px;">
 		<div> 
 			<img src="./static/img/pslogofull.png" width="220px"/>
 		</div>
-		<div style="text-align:left; font-style:italic; font-family:georgia; font-size:13px; color: #888888; margin:10px 0px 18px 7px;">
+		<div style="text-align:left; margin:10px 0px 18px 7px;">
 			Please login with one of the following providers:
 		</div>
 		<div id="loggedOutBox" style="margin-top:5px;" >
@@ -53,13 +52,13 @@
 				<img 
 					onmouseover="aol.className='openid_over'"
 					onmouseout="aol.className='openid_out'"
-					src="./static/png/aol_openid.png" 
+					src="./static/img/aol_openid.png" 
 				/></a>
 			<a id="myopenid" class="openid_out" href="javascript:login('myopenid')">	
 				<img 
 					onmouseover="myopenid.className='openid_over'"
 					onmouseout="myopenid.className='openid_out'"
-					src="./static/png/myopenid_openid.png" 
+					src="./static/img/myopenid_openid.png" 
 				 /></a>
 		</div>
 	</div>
