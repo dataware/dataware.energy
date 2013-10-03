@@ -11,6 +11,7 @@ import base64
 import random
 import string
 import time
+import datetime
 
 log = logging.getLogger( "console_log" )
 
@@ -177,13 +178,17 @@ class EnergyDB(object):
     
     
     @safety_mysql                
-    def fetch_summary( self) :
+    def fetch_summary(self, deltahrs=1) :
+        
+        
+        #cts = datetime.datetime.now()
+        cts = datetime.datetime(2013,9,25,7,51,48)
+        rightnow = cts.strftime("%Y/%m/%d:%H:%M:%S")
+        adayago = datetime.datetime.fromtimestamp(time.mktime(cts.timetuple())- deltahrs*60*60).strftime("%Y/%m/%d:%H:%M:%S")
         
         query = """
-            SELECT * FROM %s.%s ORDER BY ts DESC LIMIT 100
-        """  % ( self.DB_NAME, self.TBL_ENERGY) 
-   
-	
+            select * from  %s.%s where ts > '%s' AND ts < '%s' order by sensorid,ts asc """ % ( self.DB_NAME, self.TBL_ENERGY, adayago,rightnow) 
+        
         self.cursor.execute( query )
         row = self.cursor.fetchall()
 

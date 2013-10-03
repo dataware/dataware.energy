@@ -35,17 +35,22 @@
 </script>
 
 <script type="text/javascript">
-    console.log({{!data}});
 	$(function() {
-	    d1 = []
-	    //d2 = []
+	    
+	    readings = {}
+	    series = []
 	    $.each({{!data}}, function(i, reading){
 	        da = reading.ts.replace("\/", ":", "g").split(":");
 	        d = new Date(da[0], da[1], da[2], da[3], da[4], da[5]).getTime();
-	        d1.push([d, reading.watts]);
-	        //d2.push([d, reading.watts * 2]);
+	        a = readings[reading.sensorid] || [];
+	        a.push([d, reading.watts]);
+	        readings[reading.sensorid] = a;
 	    });
-	    $.plot("#energychart", [d1, /*d2*/],  {
+	    
+	    for(var key in readings)
+	        series.push({'label':key,data:readings[key]})
+	    
+	    $.plot("#energychart", series,  {
 	            xaxis:{mode:"time", timezone: "browser" }
 	    });
 	});

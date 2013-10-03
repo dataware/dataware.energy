@@ -112,7 +112,7 @@ body { padding-top: 70px; }
             console.log(self.resources());
         };
         
-        this.selectedResource.subscribe(function(resource){
+        /*this.selectedResource.subscribe(function(resource){
             console.log(resource.resource_name());
             
             $.ajax({
@@ -124,7 +124,7 @@ body { padding-top: 70px; }
                         $(".myview").append(data);
                     }
             });
-        },this);
+        },this);*/
         
         /*this.requestText = ko.computed(function(){
             if (self.selectedUrl())
