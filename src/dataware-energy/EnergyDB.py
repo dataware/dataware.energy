@@ -181,8 +181,7 @@ class EnergyDB(object):
     def fetch_summary(self, deltahrs=1) :
         
         
-        #cts = datetime.datetime.now()
-        cts = datetime.datetime(2013,9,25,7,51,48)
+        cts = datetime.datetime.now()
         rightnow = cts.strftime("%Y/%m/%d:%H:%M:%S")
         adayago = datetime.datetime.fromtimestamp(time.mktime(cts.timetuple())- deltahrs*60*60).strftime("%Y/%m/%d:%H:%M:%S")
         
