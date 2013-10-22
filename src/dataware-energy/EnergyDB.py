@@ -181,9 +181,18 @@ class EnergyDB(object):
     
     @safety_mysql                
     def fetch_summary(self, deltahrs=1) :
-        
-        
-        cts = datetime.datetime.now()
+	query = """
+		select max(ts) as ts from %s.%s """ % (self.DB_NAME, self.TBL_ENERGY)
+
+        self.cursor.execute(query)
+        row = self.cursor.fetchone()	
+        if row is None:
+	   return []
+ 	
+	latest = row['ts']
+	print "The latest timestamp is %s" % latest
+	cts = datetime.datetime.strptime(row['ts'], "%Y/%m/%d:%H:%M:%S")
+        #cts = datetime.datetime.now()
         rightnow = cts.strftime("%Y/%m/%d:%H:%M:%S")
         since = datetime.datetime.fromtimestamp(time.mktime(cts.timetuple())- deltahrs*60*60).strftime("%Y/%m/%d:%H:%M:%S")
         
