@@ -59,14 +59,11 @@
         ko.extenders.logChange = function(target, option){
         
             target.subscribe(function(newValue){
-               console.log("option" + ":" + newValue);
             });
             return target;
             
         }
       
-        this.hello=function(){console.log("eghehe")};
-        
         this.items = ko.observableArray().extend({logChange: "oooh!"});
         
         this.name = ko.observable("Bod").extend({logChange: "first name"});

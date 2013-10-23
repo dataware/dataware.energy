@@ -33,8 +33,7 @@ pid = str(os.getpid())
 print "pid is %s" % pid
 
 log = logging.getLogger( "console_log" )
-
-data_log = logging.getLogger( "data_log" )
+dlog = logging.getLogger( "dlog" )
 
 class std_writer( object ):
     def __init__( self, msg ):
@@ -764,14 +763,8 @@ def home( ):
         redirect( "/login" ) 
     
     installs = datadb.fetch_catalog_installs(user['user_id'])
-    
-   
     resources = datadb.fetch_user_resources(user['user_id'])
-    
-    print json.dumps(resources)
-    
     summary = resourcedb.fetch_summary()
-    
     return template( 'home_page_template', user=user, resources=json.dumps(resources), installs=installs, data=json.dumps(summary),  template_name="energy_data");
  
 @route('/summary')
@@ -787,7 +780,6 @@ def summary():
         redirect( "/login" ) 
         
     data = resourcedb.fetch_summary()    
-         
     return json.dumps(data)
     
 @route('/generate_fake_data')
@@ -867,7 +859,7 @@ def main():
     # setup logging
     #-------------------------------
     log.setLevel( logging.DEBUG )
-    data_log.setLevel( logging.DEBUG )    
+    dlog.setLevel( logging.DEBUG )    
 
     # create handlers
     #LOCAL
@@ -885,7 +877,7 @@ def main():
 
     # add the handlers to the logger
     log.addHandler( ch )
-    data_log.addHandler( fh )    
+    dlog.addHandler( fh )    
             
     # redirect standard outputs to prevent errors running the process
     # as a daemon (due to print statements in python socket libraries.
@@ -919,7 +911,6 @@ def main():
         datadb.check_tables()
     
         log.info( "database initialization completed... [SUCCESS]" );
-        
     except Exception, e:
         log.error( "database initialization error: %s" % ( e, ) )
         exit()
@@ -941,7 +932,6 @@ def main():
         log.info( "module initialization completed... [SUCCESS]" );
     except Exception, e:
         log.error( "module initialization error: %s" % ( e, ) )
-    
       
     #---------------------------------
     # Web Server initialization

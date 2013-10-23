@@ -14,7 +14,7 @@ import time
 import datetime
 
 log = logging.getLogger( "console_log" )
-
+dlog = logging.getLogger( "dlog" )
 
 #///////////////////////////////////////
 
@@ -190,7 +190,6 @@ class EnergyDB(object):
 	   return []
  	
 	latest = row['ts']
-	print "The latest timestamp is %s" % latest
 	cts = datetime.datetime.strptime(row['ts'], "%Y/%m/%d:%H:%M:%S")
         #cts = datetime.datetime.now()
         rightnow = cts.strftime("%Y/%m/%d:%H:%M:%S")
@@ -201,7 +200,6 @@ class EnergyDB(object):
         
         self.cursor.execute( query )
         row = self.cursor.fetchall()
-
         if not row is None:
             return row
         else :

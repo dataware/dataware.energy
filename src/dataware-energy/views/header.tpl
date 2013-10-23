@@ -64,6 +64,8 @@ body { padding-top: 70px; }
                     error: function(XMLHttpRequest, textStatus, errorThrown){
                         switch(XMLHttpRequest.status){
                             case 502: //update server is down
+				frequency = 15000;
+				break;
                             case 403: //forbidden - unlikely to get access anytime soon
                                 frequency = 60000;
                                 break; 
@@ -102,14 +104,11 @@ body { padding-top: 70px; }
                 resource.install_url = ko.computed(function(){  
                     return "install?resource_name=" + resource.resource_name(); 
                 });
-                console.log("adding resource..." + resource.resource_name());
                 
                 self.resources.push(resource);
             });
            
             self.selectedResource(self.resources()[0]);
-            console.log("resources are..");
-            console.log(self.resources());
         };
         
         /*this.selectedResource.subscribe(function(resource){

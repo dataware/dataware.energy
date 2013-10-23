@@ -36,11 +36,11 @@
 
 <script type="text/javascript">
 	$(function() {
-	    
 	    readings = {}
 	    series = []
 	    $.each({{!data}}, function(i, reading){
-	        da = reading.ts.replace("\/", ":", "g").split(":");
+	        var rgx = new RegExp("\/", 'g');
+	        da = reading.ts.replace(rgx, ":").split(":");
 	        d = new Date(da[0], da[1], da[2], da[3], da[4], da[5]).getTime();
 	        a = readings[reading.sensorid] || [];
 	        a.push([d, reading.watts]);
