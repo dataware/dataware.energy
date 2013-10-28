@@ -62,10 +62,14 @@ body { padding-top: 70px; }
                     },
                      
                     error: function(XMLHttpRequest, textStatus, errorThrown){
+                       
                         switch(XMLHttpRequest.status){
+                            case 0: //update server is down
+                                frequency = 15000;
+                                break;
                             case 502: //update server is down
-				frequency = 15000;
-				break;
+				                frequency = 15000;
+				                break;
                             case 403: //forbidden - unlikely to get access anytime soon
                                 frequency = 60000;
                                 break; 

@@ -16,7 +16,7 @@ import logging.handlers
 import math
 import json
 from functools import wraps
-
+import datetime
 import urllib2
 import urllib
 from gevent.event import Event
@@ -779,7 +779,13 @@ def summary():
     if user is None:
         redirect( "/login" ) 
         
-    data = resourcedb.fetch_summary()    
+    frm = request.GET[ "from" ]    
+    if frm is not None:
+        print "FROM IS %s" % datetime.datetime.fromtimestamp(int(frm)).strftime("%Y/%m/%d:%H:%M:%S")
+        data = resourcedb.fetch_summary(frm=datetime.datetime.fromtimestamp(int(frm)).strftime("%Y/%m/%d:%H:%M:%S")) 
+    else:   
+        data = resourcedb.fetch_summary()    
+        
     return json.dumps(data)
     
 @route('/generate_fake_data')
@@ -795,9 +801,25 @@ def generatedata():
     if user is None:
         redirect( "/login" ) 
     
-    resourcedb.generate_fake_data()    
+    resourcedb.generate_fake_data(60)    
     redirect( ROOT_PAGE )
-        
+
+@route('/generate_fake_data_forever')
+def generatedata():
+    
+    try:
+        user = check_login()
+    except RegisterException, e:
+        redirect( "/register" ) 
+    except LoginException, e:
+        return error( e.msg )
+      
+    if user is None:
+        redirect( "/login" )
+         
+    gevent.spawn(fakegenerator)  
+    redirect( ROOT_PAGE )        
+    
 #return a list of all resources (id, name, installed) for this user 
 @route('/resources')
 def resources():   
@@ -819,7 +841,13 @@ def resources():
 def purge():
     datadb.purgedata()
     redirect( ROOT_PAGE )
-    
+
+def fakegenerator():
+    while True:
+        print "creating fake data"
+        resourcedb.generate_fake_data(1)    
+        gevent.sleep(3)
+            
 def worker():
     while True:
         request = pqueue.get() 

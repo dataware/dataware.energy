@@ -178,43 +178,46 @@ class EnergyDB(object):
         else :
             return None    
     
-    
     @safety_mysql                
-    def fetch_summary(self, deltahrs=1) :
-	query = """
-		select max(ts) as ts from %s.%s """ % (self.DB_NAME, self.TBL_ENERGY)
-
-        self.cursor.execute(query)
-        row = self.cursor.fetchone()	
-        if row is None:
-	   return []
- 	
-	latest = row['ts']
-	cts = datetime.datetime.strptime(row['ts'], "%Y/%m/%d:%H:%M:%S")
-        #cts = datetime.datetime.now()
-        rightnow = cts.strftime("%Y/%m/%d:%H:%M:%S")
-        since = datetime.datetime.fromtimestamp(time.mktime(cts.timetuple())- deltahrs*60*60).strftime("%Y/%m/%d:%H:%M:%S")
+    def fetch_summary(self, frm=None, to=None): 
+        #deltahrs=1, upto=None) :
+    
+        if to is not None:
+            t2 = datetime.datetime.strptime(to, "%Y/%m/%d:%H:%M:%S")
+        else:
+            t2 = datetime.datetime.now()
+            
+        if frm is not None:
+            t1 = datetime.datetime.strptime(frm, "%Y/%m/%d:%H:%M:%S") 
+        else:
+            t1 = datetime.datetime.fromtimestamp(time.mktime(t2.timetuple())- 1*60*60) 
         
         query = """
-            select * from  %s.%s where ts > '%s' AND ts < '%s' order by sensorid,ts asc """ % ( self.DB_NAME, self.TBL_ENERGY, since,rightnow) 
+            select * from  %s.%s where ts > '%s' AND ts < '%s' order by sensorid,ts asc """ % ( self.DB_NAME, self.TBL_ENERGY, t1.strftime("%Y/%m/%d:%H:%M:%S") ,t2.strftime("%Y/%m/%d:%H:%M:%S") ) 
         
         self.cursor.execute( query )
+        
+        print self.cursor._executed
+        
         row = self.cursor.fetchall()
+    
         if not row is None:
             return row
         else :
             return []
 
     @safety_mysql
-    def generate_fake_data(self):
+    def generate_fake_data(self, items):
 	cts = datetime.datetime.now()
         rightnow = cts.strftime("%Y/%m/%d:%H:%M:%S")
-        for x in range(0,60):
+        for x in range(0,items):
 	    atime = datetime.datetime.fromtimestamp(time.mktime(cts.timetuple())- x*60).strftime("%Y/%m/%d:%H:%M:%S")
+	    reading = random.randrange(100,300);
 	    query = """
-		INSERT INTO %s.%s (ts,sensorid,watts) VALUES ('%s', %d, %d) """ % (self.DB_NAME, self.TBL_ENERGY, atime, 88, x*2)		
+		INSERT INTO %s.%s (ts,sensorid,watts) VALUES ('%s', %d, %d) """ % (self.DB_NAME, self.TBL_ENERGY, atime, 88, reading)		
             self.cursor.execute(query)
-
+            print self.cursor._executed
+    
     @safety_mysql
     def fetch_schema(self, table):
         query = """

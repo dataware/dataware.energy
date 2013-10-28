@@ -1,6 +1,15 @@
 #! /bin/sh
 # /etc/init.d/dataware-energy
 #
+### BEGIN INIT INFO
+# Provides:          dataware-energy
+# Required-Start:    $local_fs $remote_fs $network
+# Required-Stop:     $local_fs $remote_fs $network
+# Default-Start:     2 3 4 5
+# Default-Stop:      0 1 6
+# X-Interactive:     true
+# Short-Description: Start/stop dataware energy resource 
+### END INIT INFO#
 
 PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
 DAEMON=/usr/bin/dataware_energy
