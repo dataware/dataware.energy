@@ -778,13 +778,28 @@ def summary():
       
     if user is None:
         redirect( "/login" ) 
-        
-    frm = request.GET[ "from" ]    
+    
+    frm = None
+    to = None 
+    
+    if request.params.get('from') is not None:
+        frm = request.params.get('from') 
+    
+    if request.params.get('to') is not None:
+        to = request.params.get('to')     
+    
     if frm is not None:
-        print "FROM IS %s" % datetime.datetime.fromtimestamp(int(frm)).strftime("%Y/%m/%d:%H:%M:%S")
-        data = resourcedb.fetch_summary(frm=datetime.datetime.fromtimestamp(int(frm)).strftime("%Y/%m/%d:%H:%M:%S")) 
-    else:   
-        data = resourcedb.fetch_summary()    
+        frm=datetime.datetime.fromtimestamp(int(frm)).strftime("%Y/%m/%d:%H:%M:%S")
+        print "GOT FROM %s" % frm
+    if to is not None:
+        to=datetime.datetime.fromtimestamp(int(to)).strftime("%Y/%m/%d:%H:%M:%S")
+        print "GOT TO %s" % to
+        
+    data = resourcedb.fetch_summary(frm=frm, to=to)
+    #print "FROM IS %s" % datetime.datetime.fromtimestamp(int(frm)).strftime("%Y/%m/%d:%H:%M:%S")
+    #data = resourcedb.fetch_summary() 
+    #else:   
+    #data = resourcedb.fetch_summary()    
         
     return json.dumps(data)
     
@@ -801,7 +816,8 @@ def generatedata():
     if user is None:
         redirect( "/login" ) 
     
-    resourcedb.generate_fake_data(60)    
+    #generate 5 days worth of data
+    resourcedb.generate_fake_data(60*24*5)    
     redirect( ROOT_PAGE )
 
 @route('/generate_fake_data_forever')

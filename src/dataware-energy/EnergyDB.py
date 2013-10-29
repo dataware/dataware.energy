@@ -206,18 +206,25 @@ class EnergyDB(object):
         else :
             return []
 
+
     @safety_mysql
     def generate_fake_data(self, items):
 	cts = datetime.datetime.now()
         rightnow = cts.strftime("%Y/%m/%d:%H:%M:%S")
         for x in range(0,items):
-	    atime = datetime.datetime.fromtimestamp(time.mktime(cts.timetuple())- x*60).strftime("%Y/%m/%d:%H:%M:%S")
-	    reading = random.randrange(100,300);
-	    query = """
+            try:
+                tt = time.mktime(cts.timetuple())
+	        atime = datetime.datetime.fromtimestamp(tt - x*60).strftime("%Y/%m/%d:%H:%M:%S")
+	        print "%d %s %d" % (x, atime, (tt - x*60))
+	        reading = random.randrange(100,300);
+	        query = """
 		INSERT INTO %s.%s (ts,sensorid,watts) VALUES ('%s', %d, %d) """ % (self.DB_NAME, self.TBL_ENERGY, atime, 88, reading)		
-            self.cursor.execute(query)
-            print self.cursor._executed
-    
+                self.cursor.execute(query)
+            except Exception, e:
+                #this will catch duplicate entries due to Daylight Saving Time
+                print e
+                pass
+                
     @safety_mysql
     def fetch_schema(self, table):
         query = """

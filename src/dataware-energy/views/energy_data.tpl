@@ -1,5 +1,4 @@
 
-<span class="from"></span> to <span class="to"></span>
 
 <ul class="nav nav-tabs" id="myTab">
   <li class="active"><a href="#chart">chart</a></li>
@@ -9,8 +8,27 @@
 <div class="tab-content">
   <div class="tab-pane active" id="chart">
     <div class="row">
-        <div class="col-md-12">
+        <div class="col-md-12" style="text-align:center">
+             <h3><span class="from"></span> to <span class="to"></span></h3>
+        </div>
+    </div>
+    
+    <div class="row">
+        
+        
+        <div class="col-md-1" style="height:300px; margin-top:130px;">
+            <button id="earlier" type="button" class="btn btn-primary" > 
+                <span class="glyphicon glyphicon-circle-arrow-left"></span> 
+            </button>
+        </div>
+        <div class="col-md-10">
+           
             <div id="energychart" style="height:300px;"></div>
+        </div>
+        <div class="col-md-1" style="height:300px; margin-top:130px;">
+            <button id="later" type="button" class="btn btn-primary"> 
+                <span class="glyphicon glyphicon-circle-arrow-right"></span> 
+            </button>
         </div>
     </div>
   </div>
@@ -43,7 +61,11 @@
 	    series = [];
 	    latest = 0;
 	    earliest = Number.MAX_VALUE;
-	   
+	    index = 0;
+	    latestmax = 0;
+	    
+	    historyindex = 0;
+	    
 	    function update(data, shift=false){
 	        $.each(data, function(i, reading){
                 var rgx = new RegExp("\/", 'g');
@@ -62,7 +84,7 @@
                     earliest = d;
                     $("span.from").html(reading.ts); 
                 }
-            
+                latestmax = Math.max(latest, latestmax);
                 a.push([d, reading.watts]);
                 readings[reading.sensorid] = a;
 	        });
@@ -78,41 +100,104 @@
 	        xaxis:{mode:"time", timezone: "browser" }
 	    });
 	    
-        startpolling = function(frequency){
-        
-            console.log("starting polling!")
-        
-            setTimeout(function(){    
-                $.ajax({
-                    url: "/summary?from=" + (latest/1000),
+	    
+	    $("#earlier").click(function(){
+	        index--;
+	        latest      = 0;
+	        to          = earliest; 
+	        from        = earliest - 60*60*1000;      
+	        fetch(from,to);   
+	    });
+	    
+	     $("#later").click(function(){
+	    
+	        if (index >= 0)
+	            return;
+	            
+	        if (index++ == -1){
+	            readings = {}
+	            series = [];
+	            latest = 0;
+	            earliest = Number.MAX_VALUE;
+	            fetch();
+	            return;
+	        }  
+	        
+	        if (latest <= 0)
+	            latest = earliest;
+	            
+	        if (latestmax > latest){   
+	            earliest    = Number.MAX_VALUE;
+	            from        = latest;  
+	            to          = latest + (60*60*1000);
+	            fetch(from,to);   
+	        }
+	    });
+	    
+	    fetch = function(from, to){
+	        data = {};
+	        
+	        if (from)
+	            data['from'] = from/1000;
+	            
+	        if (to){
+	            data['to'] = to/1000;
+	        }
+	         
+	        $.ajax({
+                    url: "/summary",
                     dataType: 'json', 
+                    data: data,
                     timeout: 30000,
                     cache: false,
                     
                     success: function(data) {
-                        update(data,true);
-                        plot.setData(series);
-	                    plot.setupGrid();
-	                    plot.draw();
-                       
-                       /* $.each(data, function(i, reading){
-	                        var rgx = new RegExp("\/", 'g');
-	                        da = reading.ts.replace(rgx, ":").split(":");
-	                        d = new Date(da[0], da[1]-1, da[2], da[3], da[4], da[5]).getTime();  
-	                        latest = Math.max(latest,d);
-	                        a = readings[reading.sensorid] || [];
-	                        
-	                        if (a.length > 1){
-	                            a.slice(1);
-	                        }
-	                        a.push([d, reading.watts]);
-	                        readings[reading.sensorid] = a;
+                        readings = {};
+                        series=[];
+                        update(data);
+                        for(var key in readings){
+	                        series.push({'label':key,data:readings[key]})
+	                    }
+	    
+	                    plot = $.plot("#energychart", series,  {
+	                        xaxis:{mode:"time", timezone: "browser" }
 	                    });
-                        console.log(data);
-                        //series[0].data = series[0].data.slice(1);
-	                   // series[0].data.push([lastdate, Math.random() * 300]);
-	                     */
+                        
                     },
+                    
+                    error: function(XMLHttpRequest, textStatus, errorThrown){
+                       
+                    }
+                });     
+	    }
+	    
+        startpolling = function(frequency){
+        
+           
+        
+            setTimeout(function(){   
+                
+              
+                if (index != 0){
+                    startpolling(frequency);    
+                    return;
+                }
+                   
+                $.ajax({
+                    url: "/summary",
+                    data: {from: (latest/1000)},
+                    dataType: 'json', 
+                    timeout: 30000,
+                    cache: false,
+                    
+                    success: function(data) {   
+                        if (index == 0){
+                            update(data,true);
+                            plot.setData(series);
+	                        plot.setupGrid();
+	                        plot.draw();
+	                    }
+	                },
                      
                     error: function(XMLHttpRequest, textStatus, errorThrown){
                        
@@ -123,11 +208,14 @@
                             case 502: //update server is down
 				                frequency = 15000;
 				                break;
+				            case 500: //server error
+				                frequency = 15000;
+				                break;
                             case 403: //forbidden - unlikely to get access anytime soon
                                 frequency = 60000;
                                 break; 
                             default:
-                                frequency = 500;
+                                frequency = 2000;
                         }
                     },
                     
@@ -139,7 +227,7 @@
             },frequency);
         }	  
         
-	    startpolling(5000);
+	    startpolling(2000);
 	});
 </script>
 
