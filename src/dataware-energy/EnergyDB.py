@@ -47,7 +47,7 @@ class EnergyDB(object):
     #///////////////////////////////////////
     
     def __init__( self, configfile, section, name = "ResourceDB" ):
-            
+        log.error("____________________________IN ENERGY FILE INIT __________________________________")
         #MysqlDb is not thread safe, so program may run more
         #than one connection. As such naming them is useful.
         self.name = name
@@ -178,14 +178,26 @@ class EnergyDB(object):
         else :
             return None    
     
+    @safety_mysql
+    def _latest_ts(self):
+        query = """
+                select max(ts) as ts from %s.%s """ % (self.DB_NAME, self.TBL_ENERGY)
+
+        self.cursor.execute(query)
+        row = self.cursor.fetchone()        
+        
+        if row is None:
+         return datetime.datetime.now()
+         
+        return datetime.datetime.strptime(row['ts'], "%Y/%m/%d:%H:%M:%S")
+    
     @safety_mysql                
     def fetch_summary(self, frm=None, to=None): 
-        #deltahrs=1, upto=None) :
     
         if to is not None:
             t2 = datetime.datetime.strptime(to, "%Y/%m/%d:%H:%M:%S")
         else:
-            t2 = datetime.datetime.now()
+            t2 = self._latest_ts()
             
         if frm is not None:
             t1 = datetime.datetime.strptime(frm, "%Y/%m/%d:%H:%M:%S") 
@@ -211,12 +223,18 @@ class EnergyDB(object):
     def generate_fake_data(self, items):
 	cts = datetime.datetime.now()
         rightnow = cts.strftime("%Y/%m/%d:%H:%M:%S")
+        r1 = random.randrange(200,300);
+        r2 = random.randrange(50,200);
+        r3 = random.randrange(0,100);
+        
         for x in range(0,items):
             try:
                 tt = time.mktime(cts.timetuple())
-	        atime = datetime.datetime.fromtimestamp(tt - x*60).strftime("%Y/%m/%d:%H:%M:%S")
-	        print "%d %s %d" % (x, atime, (tt - x*60))
-	        reading = random.randrange(100,300);
+	        atime = datetime.datetime.fromtimestamp(tt - x*3*60).strftime("%Y/%m/%d:%H:%M:%S")
+	        #print "%d %s %d" % (x, atime, (tt - x*60))
+	        r1 = r1 + random.randrange(-15,10)
+	        r2 = r2 + random.randrange(-10,10);
+	        r3 = r3 + random.randrange(-5,5);
 	        query = """
 		INSERT INTO %s.%s (ts,sensorid,watts) VALUES ('%s', %d, %d) """ % (self.DB_NAME, self.TBL_ENERGY, atime, 88, reading)		
                 self.cursor.execute(query)

@@ -5,10 +5,8 @@
 	PAGE SCRIPTS
 ------------------------------------------------------------------>
 <!-- Include required JS files -->
-<script type="text/javascript" src="./static/jquery-1.6.min.js"></script> 
-<script type="text/javascript" src="static/jquery-impromptu.3.2.js"></script>
-
-<link href="static/impromptu.css" rel="stylesheet" type="text/css" />
+<script type="text/javascript" src="./static/jquery/jquery-impromptu.3.2.js"></script>
+<link href="static/css/impromptu.css" rel="stylesheet" type="text/css" />
 
 <script type="text/javascript">
 

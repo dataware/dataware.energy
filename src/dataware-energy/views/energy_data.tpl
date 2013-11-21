@@ -66,12 +66,15 @@
 	    
 	    historyindex = 0;
 	    
-	    function update(data, shift=false){
+	    function update(data, shift){
+	        
+	        shift = typeof shift != 'undefined' ? shift: false;
+	        
 	        $.each(data, function(i, reading){
                 var rgx = new RegExp("\/", 'g');
                 da = reading.ts.replace(rgx, ":").split(":");
                 d = new Date(da[0], da[1]-1, da[2], da[3], da[4], da[5]).getTime();    
-                a = readings[reading.sensorid] || [];
+                a = readings[reading.sensorId] || [];
                 
                 if (a.length > 1 && shift){
 	                a.slice(1);
@@ -86,7 +89,7 @@
                 }
                 latestmax = Math.max(latest, latestmax);
                 a.push([d, reading.watts]);
-                readings[reading.sensorid] = a;
+                readings[reading.sensorId] = a;
 	        });
 	    }
 	

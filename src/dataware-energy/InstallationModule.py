@@ -12,7 +12,8 @@ import random
 import re
 import urllib
 import urllib2
-
+import traceback
+import _socket #the unadulterated (non-monkey patched) socket
 #setup logger for this module
 log = logging.getLogger( "console_log" )
 
@@ -148,7 +149,8 @@ class InstallationModule( object ) :
 
 
     def _make_token_request( self, catalog_uri, code ):
-   
+        #home grown lookups to get round gevent issues
+        catalog_uri = self._lookup(catalog_uri) 
         #so now we need to swap the authorization code for an access 
         #token by a GET request to the appropriate endpoint. The endpoint
         #returns a json response.
@@ -164,7 +166,6 @@ class InstallationModule( object ) :
             output = response.read()
             
             access_token = self._parse_access_results( output )
-            print "finished getting access_token %s" % access_token
             
             return access_token
         
@@ -217,19 +218,14 @@ class InstallationModule( object ) :
         
         #if so simply return the resource_id the catalog gave us...
         if catalog:
-            log.info("ALREADY REGISTERED SO RETURNING resource id %s", catalog[ "resource_id" ])
             return catalog[ "resource_id" ]
         
         #and if not register ourselves with the catalog, and get one...
         else:
-            log.info("NEW REGISTRATION, MAKING REGISTRATION REQUEST")
             catalog_response = self._make_registration_request( catalog_uri, resource_name, resource_uri, namespace )
-            log.info(catalog_response)
             resource_id = self._parse_registration_results( catalog_response )
-            log.info("INSERTING %s %s %s" % (catalog_uri, resource_id, resource_name))
             self.db.insert_catalog( catalog_uri, resource_id, resource_name )
             self.db.commit()
-            log.info("RETURNING %s" % resource_id)
             return resource_id
         
 
@@ -255,7 +251,7 @@ class InstallationModule( object ) :
 
             
     def _make_registration_request( self, catalog_uri, resource_name, resource_uri, namespace ):
-        
+        catalog_uri = self._lookup(catalog_uri) 
         #if necessary setup a proxy
         if ( self.web_proxy  ):
             proxy = urllib2.ProxyHandler( self.web_proxy )
@@ -264,6 +260,7 @@ class InstallationModule( object ) :
         
         #communicate with the catalog and obtain the
         #resource_id that they assign us   
+        print "catalog uri is  %s/resource_register" % ( catalog_uri, )
         try:
             data = urllib.urlencode({
                 'resource_name': resource_name,
@@ -275,7 +272,9 @@ class InstallationModule( object ) :
             resource_id = response.read()
             return resource_id
     
-        except urllib2.URLError:
+        except urllib2.URLError, e:
+	    print e
+	    traceback.print_exc()
             raise CatalogException( "Could not contact supplied catalog" )
        
         
@@ -329,6 +328,32 @@ class InstallationModule( object ) :
         #characters in ajax transmissions, so just cause problems
         return token.replace( '+', '*' ) 
 
-        
-    
-    
+    def _lookup(self, name):
+      protocol = ""
+      host = name
+      port = ""
+   
+      if name.find("//") > -1:
+        ph = name.split("//")
+        print ph
+        protocol = "%s//" % ph[0]
+        host = ph[1]
+
+      if host.find(":") > -1:
+        hp = host.split(":")
+        host = hp[0]
+        print "host is %s" % host
+        port = ":%s" % hp[1]
+   
+      _ip4_re = re.compile('^[\d\.]+$')
+
+      if _ip4_re.match(host):
+        return name
+      try:
+        ip = _socket.getaddrinfo(host, 80, _socket.AF_INET, _socket.SOCK_STREAM)
+        for af, socktype, proto, cn, sockaddr in ip:
+          host = sockaddr[0]
+        return "%s%s%s" % (protocol, host, port)
+      except Exception, e:
+        print e
+        return name

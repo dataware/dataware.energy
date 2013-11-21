@@ -9,7 +9,7 @@ from ProcessingModule import *      #@UnusedWildImport
 from InstallationModule import *    #@UnusedWildImport
 from UpdateManager import *
 from DatawareDB import *            #@UnusedWildImport
-from EnergyDB import *           #@UnusedWildImport
+from EnergyFile import *           #@UnusedWildImport
 import time                         #@Reimport
 import OpenIDManager
 import logging.handlers
@@ -765,6 +765,7 @@ def home( ):
     installs = datadb.fetch_catalog_installs(user['user_id'])
     resources = datadb.fetch_user_resources(user['user_id'])
     summary = resourcedb.fetch_summary()
+    print json.dumps(summary)
     return template( 'home_page_template', user=user, resources=json.dumps(resources), installs=installs, data=json.dumps(summary),  template_name="energy_data");
  
 @route('/summary')
@@ -782,25 +783,24 @@ def summary():
     frm = None
     to = None 
     
+    
     if request.params.get('from') is not None:
         frm = request.params.get('from') 
     
     if request.params.get('to') is not None:
         to = request.params.get('to')     
     
+    print "Summary requested, from, to"
+    print frm
+    print to
+    
     if frm is not None:
         frm=datetime.datetime.fromtimestamp(int(frm)).strftime("%Y/%m/%d:%H:%M:%S")
-        print "GOT FROM %s" % frm
+       
     if to is not None:
         to=datetime.datetime.fromtimestamp(int(to)).strftime("%Y/%m/%d:%H:%M:%S")
-        print "GOT TO %s" % to
         
-    data = resourcedb.fetch_summary(frm=frm, to=to)
-    #print "FROM IS %s" % datetime.datetime.fromtimestamp(int(frm)).strftime("%Y/%m/%d:%H:%M:%S")
-    #data = resourcedb.fetch_summary() 
-    #else:   
-    #data = resourcedb.fetch_summary()    
-        
+    data = resourcedb.fetch_summary(frm=frm, to=to) 
     return json.dumps(data)
     
 @route('/generate_fake_data')
@@ -816,8 +816,8 @@ def generatedata():
     if user is None:
         redirect( "/login" ) 
     
-    #generate 5 days worth of data
-    resourcedb.generate_fake_data(60*24*5)    
+    #generate 6hrs worth of data
+    resourcedb.generate_fake_data((60*60*6)/3)    
     redirect( ROOT_PAGE )
 
 @route('/generate_fake_data_forever')
@@ -945,10 +945,11 @@ def main():
     #---------------------------------
     
     try:
-       
-        resourcedb = EnergyDB(configfile, "ResourceDB")
-        resourcedb.connect()
-        resourcedb.check_tables()
+        
+        log.error("creating energy file class")
+        resourcedb = EnergyFile(configfile, "ResourceDB")
+        #resourcedb.connect()
+        #resourcedb.check_tables()
         
         datadb = DataDB(configfile, "DatawareDB" )
         datadb.connect()
