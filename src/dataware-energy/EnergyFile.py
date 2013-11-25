@@ -5,12 +5,12 @@ import random
 import string
 import time
 import datetime
+import ConfigParser
 from squawk import Query
 from squawk import CSVParser
 import csv
 import sqlite3
 import os
-dbfile = "/root/energy.txt"
 log = logging.getLogger( "console_log" )
 
 
@@ -19,20 +19,29 @@ class EnergyFile(object):
     sqldb = None
     sp = 0
     dialect = None
-    
-    #720100
+    datafile = None
+    tablename = None
     
     #///////////////////////////////////////
     
-    def __init__( self, configfile, section, name = "ResourceDB" ):
-        
+    def __init__( self, configfile, section):
+        self.CONFIG_FILE = configfile
+        self.SECTION_NAME = section
+
+        Config = ConfigParser.ConfigParser()
+        Config.read( self.CONFIG_FILE )
+        datadir     = Config.get( self.SECTION_NAME, "directory" )
+        dataname    = Config.get(self.SECTION_NAME, "filename") 
+       
+        self.datafile = os.path.join(datadir,dataname)
         self.sqldb = sqlite3.connect(":memory:")
-        inhead, intail = os.path.split(dbfile)
-        tablename = os.path.splitext(intail)[0]
-        
-        log.error("reading in energy file..., table %s", tablename)
-        self._csv_to_sqldb(dbfile, tablename)
-        log.error("done....")
+        inhead, intail = os.path.split(self.datafile)
+        self.tablename = os.path.splitext(intail)[0]
+        start = time.time()
+        log.error("reading in energy file %s, table %s" % (self.datafile,self.tablename))
+        self._csv_to_sqldb(self.datafile, self.tablename)
+        end = time.time()
+        log.error("done %f" % (end-start))
        
     def _csv_to_sqldb(self, infilename, table_name):
         self.dialect = csv.Sniffer().sniff(open(infilename, "rt").readline())
@@ -52,32 +61,32 @@ class EnergyFile(object):
                 self.sqldb.execute(sql)
         self.sqldb.commit()
         self.sp = os.path.getsize(infilename)
-        print "sp is %d" % self.sp
     
     def update(self, infilename, table_name):
+        
+        #manage memory - if updates fail, recreate database from latest file
         
         if self.sp <= 0:
             return
        
         flen = os.path.getsize(infilename)
-        print ("sp is %d and len is %d" % (self.sp, flen))
+      
+        if self.sp > flen:
+            print "regenerating table from file!!"
+            self._csv_to_sqldb(self.datafile, self.tablename)
+            return
+             
         if self.sp < flen:
-            print "file has changed..adding new bits"
             myfile = open(infilename, "rt")
-            print "am here"
             inf = csv.reader(myfile, self.dialect)
-            print "am here"
             myfile.seek(self.sp+1)
-            print "seeked to %d" % (self.sp+1)
             for l in inf:
                 if len(l) > 0:
                     sql = "insert into %s values (%s);" % (table_name, self._quote_list_as_str(l))
-                    print sql
                     self.sqldb.execute(sql)    
+                        
             myfile.seek(0, os.SEEK_END)
             self.sp = myfile.tell()
-        else:
-            print "file hasn't changed!!"
     
     def _quote_str(self,str):
         if len(str) == 0:
@@ -98,13 +107,19 @@ class EnergyFile(object):
         return ",".join(self._quote_list(l))
 
         
-   
-        
     def execute_query(self, query):
         #sqldb = sqlite3.connect(":memory:") 
-        self.update("/root/energy.txt","energy")
+        self.update(self.datafile,self.tablename)
         curs = self.sqldb.cursor()
-        curs.execute(query)
+        
+        try:
+            curs.execute(query)
+        except sqlite.OperationalError, soe:
+            #rebuild here!!
+            raise
+        except Exception, e:
+            raise
+            
         rows = curs.fetchall()
         desc = curs.description
         

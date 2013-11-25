@@ -13,6 +13,7 @@ import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.Scanner;
 import java.util.TooManyListenersException;
+import java.util.Random;
 
 import java.util.Date;
 import java.util.Stack;
@@ -24,8 +25,12 @@ import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.sql.Statement;
 
+import java.io.BufferedWriter;
 import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.File;
+import java.io.FileWriter;
+import java.nio.channels.FileChannel;
 import org.ini4j.Wini; 
 
 public class Monitor implements Runnable, SerialPortEventListener{
@@ -38,8 +43,7 @@ public class Monitor implements Runnable, SerialPortEventListener{
 	Thread						readThread;
     Connection                  connection;
     SimpleDateFormat format      = new SimpleDateFormat("yyyy/MM/dd:HH:mm:ss");
-       
-    
+    Random random = new Random(System.currentTimeMillis()); 
     String url, user, password;
 
 	public static void main(String[] args)
@@ -56,7 +60,6 @@ public class Monitor implements Runnable, SerialPortEventListener{
 		{
 			iniFile = args[1];        
 		}
-		
 		portList = CommPortIdentifier.getPortIdentifiers();
 		while (portList.hasMoreElements())
 		{
@@ -132,6 +135,28 @@ public class Monitor implements Runnable, SerialPortEventListener{
 
 	}
 
+
+    public void copyFile(File src, File dst) throws IOException{
+        if (!dst.exists()){
+            dst.createNewFile();
+        }
+        FileChannel source = null;
+        FileChannel destination = null;
+        
+        try{
+            source = new FileInputStream(src).getChannel();
+            destination = new FileOutputStream(dst).getChannel();
+            destination.transferFrom(source,0,source.size());
+        }finally{
+            if (source != null){
+                source.close();
+            }
+            if (destination != null){
+                destination.close();
+            }
+        }
+    }
+    
 	public void run()
 	{
 
@@ -144,7 +169,8 @@ public class Monitor implements Runnable, SerialPortEventListener{
     
 	public void serialEvent(SerialPortEvent event)
 	{
-	    
+		format.setTimeZone(TimeZone.getTimeZone("Europe/London"));
+	        String fileName = "/root/energy.txt"; 
 		switch (event.getEventType())
 		{
 
@@ -204,9 +230,39 @@ public class Monitor implements Runnable, SerialPortEventListener{
 							    String ts = format.format(new Date()); 
 								int sensorId = Integer.parseInt(parseSingleElement(parsableLine, "id"));
 								double value = Double.parseDouble(parseSingleElement(parsableLine, "watts"));
+							    double v1 = random.nextDouble() * 500;	
+   								double v2 = random.nextDouble() * 500;
+  								double v3 = random.nextDouble() * 500;
 								
-								if (value > 0){	    
+								if (value >= 0){	
 								    
+								    
+								    String csv  = String.format("\n%s,%d,%f",ts,sensorId,v1); 
+  								    csv += String.format("\n%s,%d,%f",ts,66,v2); 
+     								csv += String.format("\n%s,%d,%f",ts,22,v3);
+     								      
+								    try{ //atomic write
+								    
+								      //create tmp copy
+								      File in = new File(fileName);
+								      File out = new File(in.getParentFile(), in.getName()+".tmp");
+								      System.err.println("tmp file is " + out.getParentFile() + " " + out.getName());
+								      copyFile(in, out);  
+								      
+								      //write to tmp copy  
+								      FileWriter fw = new FileWriter(out, true);
+								      BufferedWriter bw = new BufferedWriter(fw);
+  								      bw.write(csv);
+								      bw.close();
+								      
+								      //rename (atomic) to original
+								      System.err.println("renaming " + out.getName() + " to " + in.getName());
+								      out.renameTo(in);
+								      
+								    }
+								    catch(IOException e){
+									System.err.println("failed to write file " + e.getMessage());
+         							    }
 								    stmt = String.format("insert into energy_data values(\"%s\", '%d', '%f');", ts, sensorId, value);
 								    statement.executeUpdate(stmt);  
 								}

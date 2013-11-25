@@ -947,9 +947,7 @@ def main():
     try:
         
         log.error("creating energy file class")
-        resourcedb = EnergyFile(configfile, "ResourceDB")
-        #resourcedb.connect()
-        #resourcedb.check_tables()
+        resourcedb = EnergyFile(configfile, "Data")
         
         datadb = DataDB(configfile, "DatawareDB" )
         datadb.connect()
