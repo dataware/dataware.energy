@@ -11,16 +11,21 @@ from squawk import CSVParser
 import csv
 import sqlite3
 import os
+
 log = logging.getLogger( "console_log" )
 
 
 class EnergyFile(object):
     ''' classdocs '''
-    sqldb = None
-    sp = 0
-    dialect = None
-    datafile = None
-    tablename = None
+    sqldb       = None
+    sp          = 0
+    dialect     = None
+    datafile    = None
+    datadir     = None
+    dataname    = None
+    tablename   = None
+    lastupdate  = None
+    ROLL_INTERVAL = 30
     
     #///////////////////////////////////////
     
@@ -30,30 +35,51 @@ class EnergyFile(object):
 
         Config = ConfigParser.ConfigParser()
         Config.read( self.CONFIG_FILE )
-        datadir     = Config.get( self.SECTION_NAME, "directory" )
-        dataname    = Config.get(self.SECTION_NAME, "filename") 
-       
-        self.datafile = os.path.join(datadir,dataname)
-        self.sqldb = sqlite3.connect(":memory:")
-        inhead, intail = os.path.split(self.datafile)
-        self.tablename = os.path.splitext(intail)[0]
-        start = time.time()
-        log.error("reading in energy file %s, table %s" % (self.datafile,self.tablename))
-        self._csv_to_sqldb(self.datafile, self.tablename)
-        end = time.time()
-        log.error("done %f" % (end-start))
-       
-    def _csv_to_sqldb(self, infilename, table_name):
+        self.datadir        = Config.get( self.SECTION_NAME, "directory" )
+        self.dataname       = Config.get(self.SECTION_NAME, "filename") 
+        self.ROLL_INTERVAL  = Config.get(self.SECTION_NAME, "rollinterval") 
+        self.sqldb          = sqlite3.connect(":memory:")
+        self._set_file(drop=True)
+        
+    def _set_file(self, drop=True):
+    
+        files = sorted([f for f in os.listdir(self.datadir) if self._is_match(os.path.join(self.datadir,f))], reverse=True) 
+        
+        latestfile  = os.path.join(self.datadir, files[0], self.dataname)  
+        
+        if self.datafile is None or latestfile != self.datafile:
+            self.datafile    = os.path.join(self.datadir, files[0], self.dataname)  
+            inhead, intail = os.path.split(self.datafile)
+            self.tablename = os.path.splitext(intail)[0]
+            start = time.time()
+            log.error("reading in energy file %s, table %s" % (self.datafile,self.tablename))
+            self._csv_to_sqldb(self.datafile, self.tablename, drop)
+            end = time.time()
+            log.error("done %f" % (end-start))
+    
+    def _is_match(self,f):
+        if not os.path.isdir(f):
+            return False
+        inhead, intail = os.path.split(f)
+        dirname = os.path.splitext(intail)[0]
+        try:
+            datetime.datetime.strptime(dirname, "%Y-%m-%d:%H:%M:%S")
+            return True
+        except ValueError as err:
+            return False
+        
+    def _csv_to_sqldb(self, infilename, table_name, drop=True):
         self.dialect = csv.Sniffer().sniff(open(infilename, "rt").readline())
         inf = csv.reader(open(infilename, "rt"), self.dialect)
         column_names = inf.next()
         colstr = ",".join(column_names)   
-        try:
+        if drop:
+            try:
                 self.sqldb.execute("drop table %s;" % table_name)
-        except:
+            except:
                 pass
                 
-        self.sqldb.execute("create table %s (%s);" % (table_name, colstr))
+            self.sqldb.execute("create table %s (%s);" % (table_name, colstr))
     
         for l in inf:
             if len(l) > 0:
@@ -62,32 +88,31 @@ class EnergyFile(object):
         self.sqldb.commit()
         self.sp = os.path.getsize(infilename)
     
-    def update(self, infilename, table_name):
+    def update(self):
         
-        #manage memory - if updates fail, recreate database from latest file
+            
+        if self.lastupdate is not None and time.time() - self.lastupdate  > self.ROLL_INTERVAL:
+             self.lastupdate = time.time()
+             self._set_file(drop=True)
+             return
         
-        if self.sp <= 0:
-            return
-       
-        flen = os.path.getsize(infilename)
-      
-        if self.sp > flen:
-            print "regenerating table from file!!"
-            self._csv_to_sqldb(self.datafile, self.tablename)
-            return
-             
-        if self.sp < flen:
-            myfile = open(infilename, "rt")
+        flen = os.path.getsize(self.datafile)
+         
+        if self.sp > 0 and self.sp < flen:
+            myfile = open(self.datafile, "rt")
             inf = csv.reader(myfile, self.dialect)
             myfile.seek(self.sp+1)
             for l in inf:
                 if len(l) > 0:
-                    sql = "insert into %s values (%s);" % (table_name, self._quote_list_as_str(l))
+                    sql = "insert into %s values (%s);" % (self.tablename, self._quote_list_as_str(l))
                     self.sqldb.execute(sql)    
                         
             myfile.seek(0, os.SEEK_END)
             self.sp = myfile.tell()
-    
+        
+        self._set_file(drop=False)
+        self.lastupdate = time.time()
+         
     def _quote_str(self,str):
         if len(str) == 0:
                 return "''"
@@ -109,7 +134,7 @@ class EnergyFile(object):
         
     def execute_query(self, query):
         #sqldb = sqlite3.connect(":memory:") 
-        self.update(self.datafile,self.tablename)
+        self.update()
         curs = self.sqldb.cursor()
         
         try:
@@ -166,7 +191,7 @@ class EnergyFile(object):
         if frm is not None:
             t1 = datetime.datetime.strptime(frm, "%Y/%m/%d:%H:%M:%S") 
         else:
-            t1 = datetime.datetime.fromtimestamp(time.mktime(t2.timetuple())- 1*60*60) 
+            t1 = datetime.datetime.fromtimestamp(time.mktime(t2.timetuple())- 1*10*60) 
         
         query = """
             select * from energy where ts > '%s' AND ts <= '%s' order by ts asc """ % (t1.strftime("%Y/%m/%d:%H:%M:%S") ,t2.strftime("%Y/%m/%d:%H:%M:%S") ) 
@@ -179,13 +204,7 @@ class EnergyFile(object):
         rightnow = cts.strftime("%Y/%m/%d:%H:%M:%S")
         with open(dbfile, 'a') as f:
             f.write('ts,sensorId,watts')
-        #startduration = time.mktime(cts.timetuple()) - items*60
-        
-        #for x in range(0, items):
-            #tt = time.mktime(cts.timetuple())
-        #    atime = datetime.datetime.fromtimestamp(startduration + x*60).strftime("%Y/%m/%d:%H:%M:%S")        
-        #    reading = random.randrange(100,300)
-        
+       
         startduration = time.mktime(cts.timetuple()) - items*3
 	r1 = random.randrange(200,300);
         r2 = random.randrange(50,200);

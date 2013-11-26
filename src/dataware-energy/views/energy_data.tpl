@@ -63,7 +63,7 @@
 	    earliest = Number.MAX_VALUE;
 	    index = 0;
 	    latestmax = 0;
-	    
+	    requesting = false;
 	    historyindex = 0;
 	    
 	    function update(data, shift){
@@ -105,45 +105,68 @@
 	    
 	    
 	    $("#earlier").click(function(){
-	        index--;
-	        latest      = 0;
+	        
+	        
 	        to          = earliest; 
-	        from        = earliest - 60*60*1000;      
-	        fetch(from,to);   
+	        from        = earliest - 10*60*1000;      
+	        
+	        console.log("earlier has been clicked, calling from " + from + " to " + to);
+	        
+	        fetch({ 
+	                from:from, 
+	                to: to,
+	                success: function(data){
+	                    if (data.length > 0){
+	                        earliest = from;
+	                        latest = to; 
+	                        index-=1;
+	                    }
+	                    console.log("index is " + index);
+	                }
+	            }
+	         );   
 	    });
 	    
 	     $("#later").click(function(){
 	    
-	        if (index >= 0)
+	        if (index >= 0){
 	            return;
-	            
-	        if (index++ == -1){
-	            readings = {}
-	            series = [];
-	            latest = 0;
-	            earliest = Number.MAX_VALUE;
-	            fetch();
-	            return;
-	        }  
+	        }
 	        
 	        if (latest <= 0)
 	            latest = earliest;
 	            
 	        if (latestmax > latest){   
-	            earliest    = Number.MAX_VALUE;
 	            from        = latest;  
-	            to          = latest + (60*60*1000);
-	            fetch(from,to);   
+                to          = latest + (10*60*1000); 
+	            
+	            fetch({
+	                    from:from,
+	                    to:to, 
+	                    success:function(data){
+	                        if (data.length > 0){
+                                index += 1;
+                                earliest  = from;
+                                latest    = 0;   
+                                console.log("index is " + index); 
+                            }       
+	                    }
+	            });   
 	        }
 	    });
 	    
-	    fetch = function(from, to){
-	        data = {};
+	    fetch = function(options){
 	        
-	        if (from)
+	        if (requesting)
+	            return;
+	        requesting = true;
+	        
+	        data = {};
+	            
+	        if (options.from)
 	            data['from'] = from/1000;
 	            
-	        if (to){
+	        if (options.to){
 	            data['to'] = to/1000;
 	        }
 	         
@@ -155,32 +178,41 @@
                     cache: false,
                     
                     success: function(data) {
-                        readings = {};
-                        series=[];
-                        update(data);
-                        for(var key in readings){
-	                        series.push({'label':key,data:readings[key]})
-	                    }
-	    
-	                    plot = $.plot("#energychart", series,  {
-	                        xaxis:{mode:"time", timezone: "browser" }
-	                    });
                         
+                        if (options.success){
+                            options.success(data);
+                        }  
+                        
+                        if (data && data.length > 0){
+                            readings = {}
+                            series = []; 
+                            update(data);
+                           
+                            for(var key in readings){
+                                series.push({'label':key,data:readings[key]})
+                            }
+    
+                            plot = $.plot("#energychart", series,  {
+                                xaxis:{mode:"time", timezone: "browser" }
+                            });     
+                        }
                     },
+                    
                     
                     error: function(XMLHttpRequest, textStatus, errorThrown){
                        
+                    },
+                     
+                    complete: function(XMLHttpRequest, textStatus){
+                        requesting = false;
                     }
                 });     
 	    }
 	    
         startpolling = function(frequency){
         
-           
-        
             setTimeout(function(){   
-                
-              
+                  
                 if (index != 0){
                     startpolling(frequency);    
                     return;

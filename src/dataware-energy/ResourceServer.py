@@ -765,7 +765,6 @@ def home( ):
     installs = datadb.fetch_catalog_installs(user['user_id'])
     resources = datadb.fetch_user_resources(user['user_id'])
     summary = resourcedb.fetch_summary()
-    print json.dumps(summary)
     return template( 'home_page_template', user=user, resources=json.dumps(resources), installs=installs, data=json.dumps(summary),  template_name="energy_data");
  
 @route('/summary')
@@ -790,9 +789,12 @@ def summary():
     if request.params.get('to') is not None:
         to = request.params.get('to')     
     
-    print "Summary requested, from, to"
-    print frm
-    print to
+    if frm and to:
+        print "Summary requested, from %s to %s" % (datetime.datetime.fromtimestamp(int(frm)).strftime("%Y/%m/%d:%H:%M:%S"),datetime.datetime.fromtimestamp(int(to)).strftime("%Y/%m/%d:%H:%M:%S"))
+    elif frm:
+        print "Summary requested, from %s" %  (datetime.datetime.fromtimestamp(int(frm)).strftime("%Y/%m/%d:%H:%M:%S"))
+    elif to:
+        print "Summary requested, to %s" % (datetime.datetime.fromtimestamp(int(to)).strftime("%Y/%m/%d:%H:%M:%S"))
     
     if frm is not None:
         frm=datetime.datetime.fromtimestamp(int(frm)).strftime("%Y/%m/%d:%H:%M:%S")
@@ -948,6 +950,8 @@ def main():
         
         log.error("creating energy file class")
         resourcedb = EnergyFile(configfile, "Data")
+        #resourcedb.connect()
+        #resourcedb.check_tables()
         
         datadb = DataDB(configfile, "DatawareDB" )
         datadb.connect()

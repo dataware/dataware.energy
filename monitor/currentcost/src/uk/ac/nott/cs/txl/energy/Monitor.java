@@ -35,7 +35,9 @@ import org.ini4j.Wini;
 
 public class Monitor implements Runnable, SerialPortEventListener{
 
-    static CommPortIdentifier	portId;
+    static CommPortIdentifier	    portId;
+    static int ROLL_INTERVAL;
+    
 	@SuppressWarnings("rawtypes")
 	static Enumeration			portList;
 	Scanner						inputScanner;
@@ -43,9 +45,11 @@ public class Monitor implements Runnable, SerialPortEventListener{
 	Thread						readThread;
     Connection                  connection;
     SimpleDateFormat format      = new SimpleDateFormat("yyyy/MM/dd:HH:mm:ss");
-    Random random = new Random(System.currentTimeMillis()); 
-    String url, user, password;
-
+    SimpleDateFormat dirformat   = new SimpleDateFormat("yyyy-MM-dd:HH:mm:ss");
+    Date                         start;
+    Random random                = new Random(System.currentTimeMillis()); 
+    String                       datafile, datadir, filename;
+    
 	public static void main(String[] args)
 	{
 		boolean portFound = false;
@@ -90,15 +94,11 @@ public class Monitor implements Runnable, SerialPortEventListener{
 		    //read in config file
 			
 			try{
-			    Wini ini = new Wini(new File(iniFile));
-			    String hostname = ini.get("ResourceDB","hostname");
-			    String db 	= ini.get("ResourceDB", "dbname");
-	          	user   = ini.get("ResourceDB", "username");
-			    password  = ini.get("ResourceDB", "password");
-	            url = "jdbc:mysql://" + hostname + ":3306/" + db;
-	            System.out.println(url);
-	            System.out.println(new Date().toString());
-	            System.out.println(format.format(new Date()));
+			    Wini ini        = new Wini(new File(iniFile));
+		        datadir         =  ini.get("Data","directory");
+	            filename        =  ini.get("Data", "filename");
+	            ROLL_INTERVAL   = Integer.valueOf(ini.get("Data", "rollinterval"));
+			    createNewFile();
 			}catch(Exception e){
 			    e.printStackTrace();
 			    System.exit(-1);
@@ -108,13 +108,6 @@ public class Monitor implements Runnable, SerialPortEventListener{
 			serialPort.addEventListener(this);
 			serialPort.notifyOnDataAvailable(true);
 			serialPort.setSerialPortParams(57600, SerialPort.DATABITS_8, SerialPort.STOPBITS_1, SerialPort.PARITY_NONE);
-			
-			try{
-			    connection = DriverManager.getConnection(url, user, password);
-			}catch(Exception e){
-			    e.printStackTrace();
-			    System.exit(-1);
-			}
 		}
 		catch (PortInUseException e)
 		{
@@ -132,10 +125,27 @@ public class Monitor implements Runnable, SerialPortEventListener{
 		{
 			e.printStackTrace();
 		}
-
 	}
 
-
+    public void createNewFile() throws IOException{
+       
+        start = new Date();
+		format.format(start);
+		String directory =  String.format("%s/%s",datadir,dirformat.format(start));
+		datafile = String.format("%s/%s/%s",datadir,dirformat.format(start),filename);
+		File f = new File(directory);
+		f.mkdirs();
+		
+		File dfile = new File(datafile);
+        dfile.createNewFile();
+	    File tmp = new File(dfile.getParentFile(), dfile.getName()+".tmp");
+		FileWriter fw = new FileWriter(tmp, true);
+		BufferedWriter bw = new BufferedWriter(fw);
+  		bw.write("ts,sensorId,watts");
+		bw.close();
+		tmp.renameTo(dfile);
+    }   
+    
     public void copyFile(File src, File dst) throws IOException{
         if (!dst.exists()){
             dst.createNewFile();
@@ -170,7 +180,7 @@ public class Monitor implements Runnable, SerialPortEventListener{
 	public void serialEvent(SerialPortEvent event)
 	{
 		format.setTimeZone(TimeZone.getTimeZone("Europe/London"));
-	        String fileName = "/root/energy.txt"; 
+		
 		switch (event.getEventType())
 		{
 
@@ -194,18 +204,6 @@ public class Monitor implements Runnable, SerialPortEventListener{
 				break;
 
 			case SerialPortEvent.DATA_AVAILABLE:
-				
-				Statement statement = null;
-				Stack<String> cache = new Stack<String>();
-				int index = 0;
-				
-				try{
-				    statement = connection.createStatement();
-				}
-				catch(SQLException e){
-				    e.printStackTrace();
-				    break;
-				}
 				
 				while (inputScanner.hasNext())
 				{
@@ -236,17 +234,19 @@ public class Monitor implements Runnable, SerialPortEventListener{
 								
 								if (value >= 0){	
 								    
-								    
 								    String csv  = String.format("\n%s,%d,%f",ts,sensorId,v1); 
   								    csv += String.format("\n%s,%d,%f",ts,66,v2); 
      								csv += String.format("\n%s,%d,%f",ts,22,v3);
      								      
 								    try{ //atomic write
-								    
-								      //create tmp copy
-								      File in = new File(fileName);
+								      
+								      if ( (new Date().getTime() - start.getTime())/1000 > ROLL_INTERVAL){
+								        System.err.println("rolling logs");
+								        createNewFile();
+								      }
+								      
+								      File in  = new File(datafile);
 								      File out = new File(in.getParentFile(), in.getName()+".tmp");
-								      System.err.println("tmp file is " + out.getParentFile() + " " + out.getName());
 								      copyFile(in, out);  
 								      
 								      //write to tmp copy  
@@ -256,47 +256,25 @@ public class Monitor implements Runnable, SerialPortEventListener{
 								      bw.close();
 								      
 								      //rename (atomic) to original
-								      System.err.println("renaming " + out.getName() + " to " + in.getName());
 								      out.renameTo(in);
 								      
 								    }
 								    catch(IOException e){
-									System.err.println("failed to write file " + e.getMessage());
-         							    }
-								    stmt = String.format("insert into energy_data values(\"%s\", '%d', '%f');", ts, sensorId, value);
-								    statement.executeUpdate(stmt);  
-								}
-								
-								//add any failed inserts.
-								while (!cache.empty()){
-								    stmt = cache.pop();
-								    System.err.println(stmt);
-								    statement.executeUpdate(stmt);  
+									    System.err.println("failed to create/write file " + e.getMessage());
+         							}   
 								}
 							}
-							catch(SQLException se){
-							    cache.push(stmt);  
-							    try{
-							        System.err.println("attempting reconnect");
-                            		connection = DriverManager.getConnection(url, user, password);
-                            		statement = connection.createStatement();
-                        		}catch(Exception e){
-								    System.err.println(e.getMessage());
-                        		}
-							}
+							
 							catch (NumberFormatException n)
 							{
 								n.printStackTrace();
 							}
 							catch (Exception e){
-							  
 							    System.err.println(e.getMessage());
 							    e.printStackTrace();
 							}
 							if (parsableLine.contains("</msg>"))
-							{
-
-								
+							{		
 							}
 						}
 					}
