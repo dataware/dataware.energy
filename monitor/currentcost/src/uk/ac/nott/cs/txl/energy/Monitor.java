@@ -228,20 +228,11 @@ public class Monitor implements Runnable, SerialPortEventListener{
 							    String ts = format.format(new Date()); 
 								int sensorId = Integer.parseInt(parseSingleElement(parsableLine, "id"));
 								double value = Double.parseDouble(parseSingleElement(parsableLine, "watts"));
-							    double v1 = random.nextDouble() * 500;	
-   								double v2 = random.nextDouble() * 500;
-  								double v3 = random.nextDouble() * 500;
-								
-								if (value >= 0){	
-								    
-								    String csv  = String.format("\n%s,%d,%f",ts,sensorId,v1); 
-  								    csv += String.format("\n%s,%d,%f",ts,66,v2); 
-     								csv += String.format("\n%s,%d,%f",ts,22,v3);
-     								      
+							    
+								if (value > 0){	     
 								    try{ //atomic write
 								      
 								      if ( (new Date().getTime() - start.getTime())/1000 > ROLL_INTERVAL){
-								        System.err.println("rolling logs");
 								        createNewFile();
 								      }
 								      
@@ -252,7 +243,7 @@ public class Monitor implements Runnable, SerialPortEventListener{
 								      //write to tmp copy  
 								      FileWriter fw = new FileWriter(out, true);
 								      BufferedWriter bw = new BufferedWriter(fw);
-  								      bw.write(csv);
+  								      bw.write(String.format("\n%s,%d,%f",ts,sensorId,value));
 								      bw.close();
 								      
 								      //rename (atomic) to original

@@ -81,16 +81,20 @@
 	            }
                 if (latest < d){
                     latest = d;
-                    $("span.to").html(reading.ts); 
+                    //$("span.to").html(reading.ts); 
                 }
                 if (earliest > d){
                     earliest = d;
-                    $("span.from").html(reading.ts); 
+                    //$("span.from").html(reading.ts); 
                 }
-                latestmax = Math.max(latest, latestmax);
+                //latestmax = Math.max(latest, latestmax);
                 a.push([d, reading.watts]);
                 readings[reading.sensorId] = a;
 	        });
+	         ld = new Date(latest);
+	         ed = new Date(earliest);
+	         $("span.to").html(ld.toDateString() + " " + ld.toLocaleTimeString()); 
+	         $("span.from").html(ed.toDateString() + " " + ed.toLocaleTimeString()); 
 	    }
 	
 	    update({{!data}});
@@ -133,10 +137,10 @@
 	            return;
 	        }
 	        
-	        if (latest <= 0)
-	            latest = earliest;
+	        //if (latest <= 0)
+	          //  latest = earliest;
 	            
-	        if (latestmax > latest){   
+	        //if (latestmax > latest){   
 	            from        = latest;  
                 to          = latest + (10*60*1000); 
 	            
@@ -147,12 +151,12 @@
 	                        if (data.length > 0){
                                 index += 1;
                                 earliest  = from;
-                                latest    = 0;   
+                                latest    = to;   
                                 console.log("index is " + index); 
                             }       
 	                    }
 	            });   
-	        }
+	        //}
 	    });
 	    
 	    fetch = function(options){
