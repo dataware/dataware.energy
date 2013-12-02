@@ -6,8 +6,6 @@ import string
 import time
 import datetime
 import ConfigParser
-from squawk import Query
-from squawk import CSVParser
 import csv
 import sqlite3
 import os
@@ -17,15 +15,15 @@ log = logging.getLogger( "console_log" )
 
 class EnergyFile(object):
     ''' classdocs '''
-    sqldb       = None
-    sp          = 0
-    dialect     = None
-    datafile    = None
-    datadir     = None
-    dataname    = None
-    tablename   = None
-    lastupdate  = None
-    ROLL_INTERVAL = 30
+    sqldb           = None
+    sp              = 0
+    dialect         = None
+    datafile        = None
+    datadir         = None
+    dataname        = None
+    tablename       = None
+    lastupdate      = None
+    ROLL_INTERVAL   = None
     
     #///////////////////////////////////////
     
@@ -37,26 +35,33 @@ class EnergyFile(object):
         Config.read( self.CONFIG_FILE )
         self.datadir        = Config.get( self.SECTION_NAME, "directory" )
         self.dataname       = Config.get(self.SECTION_NAME, "filename") 
-        self.ROLL_INTERVAL  = Config.get(self.SECTION_NAME, "rollinterval") 
+        self.ROLL_INTERVAL  = int(Config.get(self.SECTION_NAME, "rollinterval")) * 3600
+        print "Roll interval is %d seconds" % self.ROLL_INTERVAL
         self.sqldb          = sqlite3.connect(":memory:")
-        self._set_file(drop=True)
+        success = self._set_file(index=1, drop=True)
+        self._set_file(index = 0, drop= not(success))
         
-    def _set_file(self, drop=True):
+        #self._set_file(index = 1, drop=False)
+    
+    def _set_file(self, index, drop=True):
     
         files = sorted([f for f in os.listdir(self.datadir) if self._is_match(os.path.join(self.datadir,f))], reverse=True) 
         
-        latestfile  = os.path.join(self.datadir, files[0], self.dataname)  
+        if len(files) > index:
+            self.lastupdate = time.time()
+            latestfile  = os.path.join(self.datadir, files[index], self.dataname)  
+            
+            if self.datafile is None or latestfile != self.datafile:
+                self.datafile    = os.path.join(self.datadir, files[index], self.dataname)  
+                inhead, intail   = os.path.split(self.datafile)
+                self.tablename   = os.path.splitext(intail)[0]
+                start = time.time()
+                self._csv_to_sqldb(self.datafile, self.tablename, drop)
+                end = time.time()
+                log.error("read in file in %f seconds" % (end-start))
+                return True
+        return False    
         
-        if self.datafile is None or latestfile != self.datafile:
-            self.datafile    = os.path.join(self.datadir, files[0], self.dataname)  
-            inhead, intail = os.path.split(self.datafile)
-            self.tablename = os.path.splitext(intail)[0]
-            start = time.time()
-            log.error("reading in energy file %s, table %s" % (self.datafile,self.tablename))
-            self._csv_to_sqldb(self.datafile, self.tablename, drop)
-            end = time.time()
-            log.error("done %f" % (end-start))
-    
     def _is_match(self,f):
         if not os.path.isdir(f):
             return False
@@ -65,7 +70,7 @@ class EnergyFile(object):
         try:
             datetime.datetime.strptime(dirname, "%Y-%m-%d:%H:%M:%S")
             return True
-        except ValueError as err:
+        except ValueError, err:
             return False
         
     def _csv_to_sqldb(self, infilename, table_name, drop=True):
@@ -91,13 +96,12 @@ class EnergyFile(object):
     def update(self):
         
             
-        if self.lastupdate is not None and time.time() - self.lastupdate  > self.ROLL_INTERVAL:
-             self.lastupdate = time.time()
-             self._set_file(drop=True)
+        if self.lastupdate is None or (self.lastupdate is not None and time.time() - self.lastupdate  > self.ROLL_INTERVAL):
+             self._set_file(index=0,drop=True)
              return
         
         flen = os.path.getsize(self.datafile)
-         
+        
         if self.sp > 0 and self.sp < flen:
             myfile = open(self.datafile, "rt")
             inf = csv.reader(myfile, self.dialect)
@@ -108,10 +112,11 @@ class EnergyFile(object):
                     self.sqldb.execute(sql)    
                         
             myfile.seek(0, os.SEEK_END)
-            self.sp = myfile.tell()
-        
-        self._set_file(drop=False)
-        self.lastupdate = time.time()
+            self.sp = myfile.tell() 
+        elif self.sp > flen: #file has rotated, append the new one!
+            print "doing file reload here! sp is %d and flen is %d" % (self.sp, flen)
+            self._set_file(index=0,drop=False)
+       
          
     def _quote_str(self,str):
         if len(str) == 0:
@@ -133,18 +138,18 @@ class EnergyFile(object):
 
         
     def execute_query(self, query):
-        #sqldb = sqlite3.connect(":memory:") 
+        
         self.update()
+       
         curs = self.sqldb.cursor()
         
         try:
             curs.execute(query)
-        except sqlite.OperationalError, soe:
-            #rebuild here!!
-            raise
+        except sqlite3.OperationalError, soe:
+            return []
         except Exception, e:
-            raise
-            
+            return []
+      
         rows = curs.fetchall()
         desc = curs.description
         
@@ -154,27 +159,17 @@ class EnergyFile(object):
         
         return rows
         
-          
-    
-    def execute_query_old(self, query):
-        #this loads the data into memory!
-        #maybe retrieve table here? or assume known.
-        source = CSVParser(dbfile)
-        q = Query(query)
-        result = []
-        
-        for row in q(source): 
-            result.append(row)
-        
-        return result
-        
+         
     def _latest_ts(self):
         query = """
                 select max(ts) as ts from energy"""
-
+        
+       
         result = self.execute_query(query)      
-      
-        if result is []:
+        
+     
+        if result is None or len(result) == 0:
+           
             return datetime.datetime.now()
          
         row = result[0]
@@ -191,7 +186,7 @@ class EnergyFile(object):
         if frm is not None:
             t1 = datetime.datetime.strptime(frm, "%Y/%m/%d:%H:%M:%S") 
         else:
-            t1 = datetime.datetime.fromtimestamp(time.mktime(t2.timetuple())- 1*10*60) 
+            t1 = datetime.datetime.fromtimestamp(time.mktime(t2.timetuple())- 1*60*60) 
         
         query = """
             select * from energy where ts > '%s' AND ts <= '%s' order by ts asc """ % (t1.strftime("%Y/%m/%d:%H:%M:%S") ,t2.strftime("%Y/%m/%d:%H:%M:%S") ) 
@@ -202,41 +197,51 @@ class EnergyFile(object):
     def generate_fake_data(self, items):
         cts = datetime.datetime.now()
         rightnow = cts.strftime("%Y/%m/%d:%H:%M:%S")
-        with open(dbfile, 'a') as f:
-            f.write('ts,sensorId,watts')
+        #with open(dbfile, 'a') as f:
+        #    f.write('ts,sensorId,watts')
        
         startduration = time.mktime(cts.timetuple()) - items*3
 	r1 = random.randrange(200,300);
         r2 = random.randrange(50,200);
         r3 = random.randrange(0,100);
+        dbfile = ""
+    	for x in range(0, items):
+    
+          if (x % (self.ROLL_INTERVAL/3) == 0):
+            directory = os.path.join(self.datadir,datetime.datetime.fromtimestamp(startduration + x*3).strftime("%Y-%m-%d:%H:%M:%S"))
         
-	for x in range(0, items):
-            #tt = time.mktime(cts.timetuple())
-            atime = datetime.datetime.fromtimestamp(startduration + x*3).strftime("%Y/%m/%d:%H:%M:%S")           
+            if not os.path.exists(directory):
+                os.makedirs(directory)
+        
+            dbfile = os.path.join(self.datadir,directory,self.dataname)
+          
+            with open(dbfile, 'a') as f:
+                f.write('ts,sensorId,watts')
+                
+       
+          atime = datetime.datetime.fromtimestamp(startduration + x*3).strftime("%Y/%m/%d:%H:%M:%S")           
 	    
-	    r1min = -5 if r1 > 300 else -3  
-	    r2min = -5 if r2 > 300 else -3 
-	    r3min = -5 if r3 > 300 else -3 
+	  r1min = -5 if r1 > 300 else -3  
+	  r2min = -5 if r2 > 300 else -3 
+	  r3min = -5 if r3 > 300 else -3 
 	    
-	    r1min = 2 if r1 <= 1 else r1min
-	    r2min = 2 if r2 <= 1 else r2min
-	    r3min = 2 if r3 <= 1 else r3min
+	  r1min = 2 if r1 <= 1 else r1min
+	  r2min = 2 if r2 <= 1 else r2min
+	  r3min = 2 if r3 <= 1 else r3min
 	    
-	    r1max = 5 if r1 < 100 else 3
-	    r2max = 5 if r1 < 100 else 3
-	    r3max = 5 if r1 < 100 else 3
+	  r1max = 5 if r1 < 100 else 3
+	  r2max = 5 if r1 < 100 else 3
+	  r3max = 5 if r1 < 100 else 3
 	    
-	    r1 = r1 + random.randrange(r1min,r1max)
-	    r2 = r2 + random.randrange(r2min,r2max)
-	    r3 = r3 + random.randrange(r3min,r3max)
+ 	  r1 = r1 + random.randrange(r1min,r1max)
+	  r2 = r2 + random.randrange(r2min,r2max)
+	  r3 = r3 + random.randrange(r3min,r3max)
 	    
-	    try:
-	       with open(dbfile, 'a') as f:
-	       	  f.write('\n%s,%d,%f' % (atime, 88, r1))  
-	       	  f.write('\n%s,%d,%f' % (atime, 77, r2))  
-	       	  f.write('\n%s,%d,%f' % (atime, 66, r3))    
-            except Exception, e:
-                print e    
+	  try:
+	    with open(dbfile, 'a') as f:
+	      f.write('\n%s,%d,%f\n%s,%d,%f\n%s,%d,%f' % (atime, 88, r1, atime, 77, r2, atime, 66, r3))   
+          except Exception, e:
+              print e    
                 
     def fetch_schema(self, table):
         return {}

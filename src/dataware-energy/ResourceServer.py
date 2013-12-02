@@ -818,8 +818,8 @@ def generatedata():
     if user is None:
         redirect( "/login" ) 
     
-    #generate 6hrs worth of data
-    resourcedb.generate_fake_data((60*60*6)/3)    
+    #generate 1days worth of data
+    resourcedb.generate_fake_data((60*60*24)/3)    
     redirect( ROOT_PAGE )
 
 @route('/generate_fake_data_forever')

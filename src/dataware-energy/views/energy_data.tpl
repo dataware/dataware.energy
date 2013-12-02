@@ -57,14 +57,13 @@
 
 <script type="text/javascript">
 	$(function() {
+	    SCROLL_DELTA = 60*60*1000;
 	    readings = {}
 	    series = [];
 	    latest = 0;
 	    earliest = Number.MAX_VALUE;
 	    index = 0;
-	    latestmax = 0;
 	    requesting = false;
-	    historyindex = 0;
 	    
 	    function update(data, shift){
 	        
@@ -81,20 +80,20 @@
 	            }
                 if (latest < d){
                     latest = d;
-                    //$("span.to").html(reading.ts); 
                 }
                 if (earliest > d){
                     earliest = d;
-                    //$("span.from").html(reading.ts); 
                 }
-                //latestmax = Math.max(latest, latestmax);
                 a.push([d, reading.watts]);
                 readings[reading.sensorId] = a;
 	        });
-	         ld = new Date(latest);
-	         ed = new Date(earliest);
-	         $("span.to").html(ld.toDateString() + " " + ld.toLocaleTimeString()); 
-	         $("span.from").html(ed.toDateString() + " " + ed.toLocaleTimeString()); 
+	        
+	        if (data.length > 0){
+	            ld = new Date(latest);
+	            ed = new Date(earliest);
+	            $("span.to").html(ld.toDateString() + " " + ld.toLocaleTimeString()); 
+	            $("span.from").html(ed.toDateString() + " " + ed.toLocaleTimeString()); 
+	        }
 	    }
 	
 	    update({{!data}});
@@ -108,14 +107,10 @@
 	    });
 	    
 	    
-	    $("#earlier").click(function(){
-	        
-	        
+	    $("#earlier").click(function(){        
 	        to          = earliest; 
-	        from        = earliest - 10*60*1000;      
-	        
-	        console.log("earlier has been clicked, calling from " + from + " to " + to);
-	        
+	        from        = earliest - SCROLL_DELTA;      
+	   
 	        fetch({ 
 	                from:from, 
 	                to: to,
@@ -125,38 +120,32 @@
 	                        latest = to; 
 	                        index-=1;
 	                    }
-	                    console.log("index is " + index);
 	                }
 	            }
 	         );   
 	    });
 	    
-	     $("#later").click(function(){
+	    $("#later").click(function(){
 	    
 	        if (index >= 0){
 	            return;
 	        }
 	        
-	        //if (latest <= 0)
-	          //  latest = earliest;
-	            
-	        //if (latestmax > latest){   
-	            from        = latest;  
-                to          = latest + (10*60*1000); 
-	            
-	            fetch({
-	                    from:from,
-	                    to:to, 
-	                    success:function(data){
-	                        if (data.length > 0){
-                                index += 1;
-                                earliest  = from;
-                                latest    = to;   
-                                console.log("index is " + index); 
-                            }       
-	                    }
-	            });   
-	        //}
+            from        = latest;  
+            to          = latest + SCROLL_DELTA; 
+            
+            fetch({
+                    from:from,
+                    to:to, 
+                    success:function(data){
+                    
+                        if (data.length > 0){
+                            index += 1;
+                            earliest  = from;
+                            //latest    = to;   
+                        }       
+                    }
+            });   
 	    });
 	    
 	    fetch = function(options){
@@ -183,10 +172,12 @@
                     
                     success: function(data) {
                         
+                        //call the options success callback function
                         if (options.success){
                             options.success(data);
                         }  
                         
+                        //plot the newly received data
                         if (data && data.length > 0){
                             readings = {}
                             series = []; 
@@ -254,7 +245,7 @@
                                 frequency = 60000;
                                 break; 
                             default:
-                                frequency = 2000;
+                                frequency = 6000;
                         }
                     },
                     
@@ -266,7 +257,7 @@
             },frequency);
         }	  
         
-	    startpolling(2000);
+	    startpolling(3000);
 	});
 </script>
 
