@@ -97,7 +97,7 @@ public class Monitor implements Runnable, SerialPortEventListener{
 			    Wini ini        = new Wini(new File(iniFile));
 		        datadir         =  ini.get("Data","directory");
 	            filename        =  ini.get("Data", "filename");
-	            ROLL_INTERVAL   = Integer.valueOf(ini.get("Data", "rollinterval"));
+	            ROLL_INTERVAL   = Integer.valueOf(ini.get("Data", "rollinterval")) * 60 *60;
 			    createNewFile();
 			}catch(Exception e){
 			    e.printStackTrace();

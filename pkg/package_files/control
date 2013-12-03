@@ -7,7 +7,7 @@ Standards-Version: 3.8.4
 
 Package: dataware-energy
 Architecture: armel 
-Depends: mysql-server, dbconfig-common, openjdk-6-jre, librxtx-java, libmysql-java, dataware-bottle, dataware-mysql-python, dataware-sqlalchemy,  dataware-wsgiref, dataware-greenlet, dataware-gevent, dataware-sqlparse, ${misc:Depends}, ${python:Depends}
-XB-Python-Version: ${python:Versions}
+Depends: mysql-server, dbconfig-common, openjdk-6-jre, librxtx-java, libmysql-java, dataware-bottle, dataware-mysql-python, dataware-sqlalchemy,  dataware-wsgiref, dataware-greenlet, dataware-gevent, dataware-sqlparse, dataware-btsync, ${misc:Depends}, ${python:Depends}
+X-Python-Version: >= 2.6 
 Provides: ${python:Provides}
 Description: Dataware resource component

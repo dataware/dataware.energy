@@ -1,3 +1,5 @@
+#have with work with 2.5
+from __future__ import with_statement 
 import hashlib
 import logging
 import base64
@@ -93,12 +95,19 @@ class EnergyFile(object):
         self.sqldb.commit()
         self.sp = os.path.getsize(infilename)
     
-    def update(self):
+    def reading_latest_file(self):
+        files = sorted([f for f in os.listdir(self.datadir) if self._is_match(os.path.join(self.datadir,f))], reverse=True) 
+        if len(files) > 0:
+            return os.path.join(self.datadir, files[0], self.dataname)  == self.datafile
+        return True
         
-            
-        if self.lastupdate is None or (self.lastupdate is not None and time.time() - self.lastupdate  > self.ROLL_INTERVAL):
-             self._set_file(index=0,drop=True)
-             return
+    def update(self):
+       
+        #if the latest file has changed, read it in!
+        if not self.reading_latest_file():
+            print "************** latest file has changed.....reading in new one *****************"
+            self._set_file(index=0,drop=False)
+            return
         
         flen = os.path.getsize(self.datafile)
         
@@ -138,9 +147,9 @@ class EnergyFile(object):
 
         
     def execute_query(self, query):
-        
-        self.update()
        
+        self.update()
+        
         curs = self.sqldb.cursor()
         
         try:
