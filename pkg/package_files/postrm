@@ -2,3 +2,9 @@
 rm -rf /usr/share/pyshared/dataware-energy
 ucf --purge /etc/dbconfig-common/dataware-energy.conf
 ucf --purge /etc/dataware/energy_config.cfg
+#remove startup scripts
+cd /etc/init.d
+update-rc.d -f dataware-energy remove
+update-rc.d -f currentcost remove
+rm -f dataware-energy
+rm -f currentcost-monitor

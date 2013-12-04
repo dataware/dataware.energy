@@ -1,0 +1,43 @@
+#! /bin/sh
+# /etc/init.d/currentcost-monitor/
+#
+### BEGIN INIT INFO
+# Provides:          currentcost-monitor
+# Required-Start:    $local_fs $remote_fs $network $syslog
+# Required-Stop:     $local_fs $remote_fs $network $syslog
+# Default-Start:     2 3 4 5
+# Default-Stop:      0 1 6
+# Short-Description: starts the current cost energy monitor
+# Description:       starts currentcost using start-stop-daemon
+### END INIT INFO
+
+PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
+DAEMON=/usr/bin/currentcost-monitor
+NAME=currentcost-monitor
+DESC="current cost monitoring software"
+MONITOR_OPTS=/dev/ttyUSB0 # Additional options given to the server
+# Carry out specific functions when asked to by the system
+case "$1" in
+  start)
+    echo -n "Starting $DESC:\n"
+    if [ -e "$MONITOR_OPTS" ]; then
+        start-stop-daemon --start --verbose --background -m --pidfile /var/run/$NAME.pid --oknodo --exec $DAEMON -- $MONITOR_OPTS
+        echo "$NAME.\n"
+    else
+        echo "not starting $NAME as $MONITOR_OPTS doesn't exist\n"
+    fi
+    ;;
+
+  stop)
+    echo -n "Stopping $DESC: "
+    start-stop-daemon --stop --verbose --pidfile /var/run/$NAME.pid
+    echo "$NAME."
+    ;;
+
+  *)
+    echo "Usage: /etc/init.d/currentcost-monitor {start|stop}"
+    exit 1
+    ;;
+esac
+
+exit 0

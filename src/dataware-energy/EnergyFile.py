@@ -103,12 +103,16 @@ class EnergyFile(object):
         
     def update(self):
        
+       
         #if the latest file has changed, read it in!
         if not self.reading_latest_file():
             print "************** latest file has changed.....reading in new one *****************"
             self._set_file(index=0,drop=False)
             return
         
+        if self.datafile is None:
+            return
+            
         flen = os.path.getsize(self.datafile)
         
         if self.sp > 0 and self.sp < flen:

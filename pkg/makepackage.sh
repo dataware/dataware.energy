@@ -14,11 +14,12 @@ cp $PKG_DIR/postinst ./
 cp $PKG_DIR/rules ./
 cp $PKG_DIR/dirs ./
 cp $PKG_DIR/dataware-energy.init ./
+cp $PKG_DIR/currentcost-monitor.init ./
 cd ..
 cp $PKG_DIR/mysql.sql ./
 dpkg-buildpackage -rfakeroot -uc -us
 cd debian/dataware-energy
-mkdir -p var/dataware-energy
+mkdir -p var/dataware-energy/data
 mkdir -p etc/dataware
 mkdir -p var/log/dataware
 #make the directory for the java monitor code
